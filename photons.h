@@ -10,6 +10,8 @@
 #define ALIVE 1
 #define DEAD 0
 
+const double pi = 3.1415926535897932384;
+
 /* Properties of the medium */
 #define SLABSIZE_X 10
 #define SLABSIZE_Y 10
@@ -20,6 +22,13 @@
 #define MU_TOTAL (MU_A + MU_S)
 const double mu_total = MU_A + MU_S;
 const double albedo = MU_S / (mu_total);
+const double m = 0.8; // Index of refraction (used in Mie scattering)
+const double r = 0.00001; // Radius of spherical scattering particles (Mie scattering)
+const double lambda = 500; // Wavelength of incident light
+const double alpha = (2*pi*r) / lambda; // Size parameter for scattering
+
+/* Properties of the light */
+
 
 /* Properties of our model (taken from Ramella et. al., 2005) */
 #define WEIGHT_CUTOFF 0.01 // From Ramella et. al.
@@ -103,7 +112,16 @@ public:
             state = DEAD;
         }
     }
+    
+    /*
+     * TODO:
+     * scatter(void) - 
+     * Performs scattering based on the polarizing angle and scattering
+     * particles in the media. For spheres, use Mie scattering theory.
+     */
+    void scatter(void) {
 
+    }
 };
 
 #endif
