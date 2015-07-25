@@ -7,6 +7,9 @@
 #ifndef __photons__h
 #define __photons__h 1
 
+#define ALIVE 1
+#define DEAD 0
+
 /* Properties of the medium */
 #define SLABSIZE_X 10
 #define SLABSIZE_Y 10
@@ -18,9 +21,10 @@
 const double mu_total = MU_A + MU_S;
 const double albedo = MU_S / (mu_total);
 
-/* Properties of our model */
-#define WEIGHT_CUTOFF 0.01 // From Ramella et. al
-
+/* Properties of our model (taken from Ramella et. al., 2005) */
+#define WEIGHT_CUTOFF 0.01 // From Ramella et. al.
+const double survival_multiplier = 10;
+const double survival_chance = 1 / survival_multiplier;
 
 /* Some random number generator that produces a uniform 
  * distribution of numbers from (0,1].
@@ -37,6 +41,7 @@ private:
 public:
     stokes_v(void) { I = 0; Q = 0; U = 0; V = 0; }
     stokes_v(double I, double Q, double U, double V) : I(I), Q(Q), U(U), V(V) { }; 
+    void scalar_mult(double x) { I = x*I; Q = x*Q; U = x*U; V = x*V;}
 };
 
 struct photon {
@@ -44,10 +49,11 @@ private:
     stokes_v S;
     Vector V; // Orientation vector
     Vector U; // Direction cosine vector
-    uint32_t x;
-    uint32_t y;
-    uint32_t z;
+    int32_t x;
+    int32_t y;
+    int32_t z;
     uint32_t weight;
+    bool state; // Alive or dead
 public:
     // Default constructor.
     photon(void) {
@@ -58,6 +64,7 @@ public:
         z = 0;
         Vector V(0,0,1);
         Vector U(0,0,1);
+        state = ALIVE;
     } 
 
     /* 
@@ -79,8 +86,24 @@ public:
      */
     void drop(void) {
         weight *= albedo; 
-        if (weight < WEIGHT_CUTOFF) { roulette();}       
+        // Check weight
+        if (weight < WEIGHT_CUTOFF) {  
+            // Russian Roulette for photon absorption
+            double rand = rand_num();
+            if (rand > survival_chance) {
+                weight = 0;  
+                state = DEAD;
+            } else {    
+                weight *= survival_multiplier; 
+            } 
+        }
+        // Check boundaries
+        if ((x > SLABSIZE_X) || (x < 0) || (y > SLABSIZE_Y) || (y < 0) || (z > SLABSIZE_Z) || (z < 0)) {
+            S.scalar_mult(weight);          
+            state = DEAD;
+        }
     }
+
 };
 
 #endif
