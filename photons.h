@@ -11,7 +11,6 @@
 #define ALIVE 1
 #define DEAD 0
 
-const double pi = 3.1415926535897932384;
 
 /* Properties of the medium */
 #define SLABSIZE_X 10
@@ -23,10 +22,6 @@ const double pi = 3.1415926535897932384;
 #define MU_TOTAL (MU_A + MU_S)
 const double mu_total = MU_A + MU_S;
 const double albedo = MU_S / (mu_total);
-const double m = 0.8; // Index of refraction (used in Mie scattering)
-const double r = 0.00001; // Radius of spherical scattering particles (Mie scattering)
-const double lambda = 500; // Wavelength of incident light
-const double alpha = (2*pi*r) / lambda; // Size parameter for scattering
 
 /* Properties of the light */
 
