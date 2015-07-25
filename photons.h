@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "Vector.h"
+#include "mie.h"
 
 #ifndef __photons__h
 #define __photons__h 1
