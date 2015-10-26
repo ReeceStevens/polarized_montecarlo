@@ -11,6 +11,19 @@
 #define ALIVE 1
 #define DEAD 0
 
+// TODO: 
+// make the effects of diattenuation optional (turn on or off)
+// decide whether or not to do the sphere or cylinder at every scattering encounter
+//
+// Get spherical model working using ramella code or other lit
+// test decision making by choosing two different diameters of spherical scatterers
+//
+// Make modular? more general structure, additional components for later montecarlo
+//
+// swappable sizes, polarization or not, birefringence or not, etc.
+//
+// new phase functions or not
+
 
 /* Properties of the medium */
 #define SLABSIZE_X 10
@@ -47,6 +60,16 @@ public:
     stokes_v(void) { I = 0; Q = 0; U = 0; V = 0; }
     stokes_v(double I, double Q, double U, double V) : I(I), Q(Q), U(U), V(V) { }; 
     void scalar_mult(double x) { I = x*I; Q = x*Q; U = x*U; V = x*V;}
+};
+
+struct reference_frame {
+private:
+	Vector V;
+	Vector U;
+public:	
+	Vector returnThird() {
+		return Vector.cross_prod(V,U);
+	}
 };
 
 struct photon {
@@ -108,7 +131,14 @@ public:
             state = DEAD;
         }
     }
-    
+
+	double* rejection(void) {
+		double* angles = new double[2];
+		angles[0] = 1.00;
+		angles[1] = 3.14;
+		return angles;
+	}
+
     /*
      * TODO:
      * scatter(void) - 
@@ -116,7 +146,33 @@ public:
      * particles in the media. For spheres, use Mie scattering theory.
      */
     void scatter(void) {
+		// Determine scattering angles by rejection method.
+		double* scat_angles = rejection();
+		double alpha = scat_angles[0];
+		double beta = scat_angles[1];
+		// Rotate V about U
+		int columns = 3;
+		int rows = 3;	
+		double** data = new double* [columns];
+		for (int i = 0; i < columns; i += 1) {
+			data[i] = new double [rows];
+		}
+		// Define a rotational matrix R_{euler}
+		data[0][0] = U.i*U.i*(1- cos(alpha));
+		data[1][0] = U.j*U.i*(1- cos(alpha)) - U.k*sin(alpha);	
+		data[2][0] = U.k*U.i*(1- cos(alpha)) + U.j*sin(alpha);
+		data[0][1] = U.i*U.j*(1- cos(alpha)) + U.k*sin(alpha);	
+		data[1][1] = U.j*U.j*(1- cos(alpha)) + cos(alpha);	
+		data[2][1] = U.j*U.k*(1- cos(alpha)) - U.i*sin(alpha);	
+		data[0][2] = U.i*U.k*(1- cos(alpha)) - U.j*sin(alpha);	
+		data[1][2] = U.j*U.k*(1- cos(alpha)) + U.i*sin(alpha);	
+		data[2][2] = U.k*U.k*(1- cos(alpha)) + cos(alpha);	
 
+		Vector newV = new Vector	
+
+		// TODO: does this delete the individual mallocs inside the matrix?
+		delete [] scat_angles;
+		delete [] data;
     }
 };
 

@@ -23,7 +23,7 @@ public:
      * Return the cross product of vectors
      * a and b in new vector c.
      */
-    Vector cross_prod(Vector& a, Vector& b) {
+    static Vector cross_prod(Vector& a, Vector& b) {
         double new_i = a.j * b.k + a.k * b.j;
         double new_j = a.i * b.k + a.k * b.i;
         double new_k = a.i * b.j + a.j * b.i;
