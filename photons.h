@@ -139,6 +139,52 @@ public:
 		return angles;
 	}
 
+	void rotate_about_vector(Vector& trajectory, Vector& axis, double angle) {
+		int columns = 3;
+		int rows = 3;	
+		double** r_euler = new double* [columns];
+		for (int i = 0; i < columns; i += 1) {
+			r_euler[i] = new double [rows];
+		}
+
+		// Define a rotational matrix R_{euler}
+		r_euler[0][0] = axis.i*axis.i*(1- cos(angle));
+		r_euler[1][0] = axis.j*axis.i*(1- cos(angle)) - axis.k*sin(angle);	
+		r_euler[2][0] = axis.k*axis.i*(1- cos(angle)) + axis.j*sin(angle);
+		r_euler[0][1] = axis.i*axis.j*(1- cos(angle)) + axis.k*sin(angle);	
+		r_euler[1][1] = axis.j*axis.j*(1- cos(angle)) + cos(angle);	
+		r_euler[2][1] = axis.j*axis.k*(1- cos(angle)) - axis.i*sin(angle);	
+		r_euler[0][2] = axis.i*axis.k*(1- cos(angle)) - axis.j*sin(angle);	
+		r_euler[1][2] = axis.j*axis.k*(1- cos(angle)) + axis.i*sin(angle);	
+		r_euler[2][2] = axis.k*axis.k*(1- cos(angle)) + cos(angle);	
+
+		// Make vectors into arrays for easier multiplication
+		double* v = new double [3];	
+		v[0] = trajectory.i;	
+		v[1] = trajectory.j;	
+		v[2] = trajectory.k;	
+
+		double* new_v = new double [3];	
+		new_v[0] = 0;	
+		new_v[1] = 0;	
+		new_v[2] = 0;
+
+		// Multiply trajectory by rotational matrix.
+		for (int i = 0; i < 3; i += 1) {
+			for (int j = 0; j < 3; j += 1) {
+				new_v[i] += v[j] * r_euler[j][i];
+			}			
+		}
+
+		// Update trajectory vector
+		trajectory.i = new_v[0];
+		trajectory.j = new_v[1];
+		trajectory.k = new_v[2];	
+
+		delete [] r_euler;
+		delete [] v;
+	}
+
     /*
      * TODO:
      * scatter(void) - 
@@ -150,29 +196,18 @@ public:
 		double* scat_angles = rejection();
 		double alpha = scat_angles[0];
 		double beta = scat_angles[1];
-		// Rotate V about U
-		int columns = 3;
-		int rows = 3;	
-		double** data = new double* [columns];
-		for (int i = 0; i < columns; i += 1) {
-			data[i] = new double [rows];
-		}
-		// Define a rotational matrix R_{euler}
-		data[0][0] = U.i*U.i*(1- cos(alpha));
-		data[1][0] = U.j*U.i*(1- cos(alpha)) - U.k*sin(alpha);	
-		data[2][0] = U.k*U.i*(1- cos(alpha)) + U.j*sin(alpha);
-		data[0][1] = U.i*U.j*(1- cos(alpha)) + U.k*sin(alpha);	
-		data[1][1] = U.j*U.j*(1- cos(alpha)) + cos(alpha);	
-		data[2][1] = U.j*U.k*(1- cos(alpha)) - U.i*sin(alpha);	
-		data[0][2] = U.i*U.k*(1- cos(alpha)) - U.j*sin(alpha);	
-		data[1][2] = U.j*U.k*(1- cos(alpha)) + U.i*sin(alpha);	
-		data[2][2] = U.k*U.k*(1- cos(alpha)) + cos(alpha);	
 
-		Vector newV = new Vector	
+		// Rotate V about U by alpha
+		rotate_about_vector(this.V, this.U, alpha);
+
+		// Rotate U about new V by beta
+		rotate_about_vector(this.U, this.V, beta);
+
+		// TODO: Adjust the Stokes vector
+		
 
 		// TODO: does this delete the individual mallocs inside the matrix?
 		delete [] scat_angles;
-		delete [] data;
     }
 };
 
