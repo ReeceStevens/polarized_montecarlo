@@ -10,7 +10,7 @@ public:
 
     Vector(double i, double j, double k) : i(i), j(j), k(k){};
 
-    Vector(Vector& that) {
+    Vector(const Vector& that) {
         this->i = that.i;
         this->j = that.j;
         this->k = that.k;

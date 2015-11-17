@@ -23,6 +23,8 @@
 // swappable sizes, polarization or not, birefringence or not, etc.
 //
 // new phase functions or not
+//
+// Validation using newest Ramella paper. compare to ramella output for validation.
 
 
 /* Properties of the medium */
@@ -204,7 +206,7 @@ public:
 		rotate_about_vector(this.U, this.V, beta);
 
 		// TODO: Adjust the Stokes vector
-		
+					
 
 		// TODO: does this delete the individual mallocs inside the matrix?
 		delete [] scat_angles;
