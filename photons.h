@@ -62,7 +62,21 @@ private:
 public:
     stokes_v(void) { I = 0; Q = 0; U = 0; V = 0; }
     stokes_v(double I, double Q, double U, double V) : I(I), Q(Q), U(U), V(V) { }; 
+	stokes_v(const stokes_v& that) {
+		this->I = that.I;
+		this->Q = that.Q;
+		this->U = that.U;
+		this->V = that.V;
+	}
     void scalar_mult(double x) { I = x*I; Q = x*Q; U = x*U; V = x*V;}
+	void rotate_stokes(double phi) {
+		double cos_2phi = cos(2*phi);
+		double sin_2phi = sin(2*phi);
+		double old_q = this->Q;
+		double old_u = this->U;
+		this->Q = old_q*cos_2phi + old_u*sin_2phi;
+		this->U = -old_q*sin_2phi + old_u*cos_2phi;
+	}
 };
 
 struct reference_frame {
@@ -84,6 +98,8 @@ private:
     int32_t y;
     int32_t z;
     uint32_t weight;
+	double alpha = 0; // scattering angles
+	double beta = 0; // scattering angles
     bool state; // Alive or dead
 public:
     // Default constructor.
@@ -129,17 +145,53 @@ public:
             } 
         }
         // Check boundaries
-        if ((x > SLABSIZE_X) || (x < 0) || (y > SLABSIZE_Y) || (y < 0) || (z > SLABSIZE_Z) || (z < 0)) {
-            S.scalar_mult(weight);          
-            state = DEAD;
-        }
+		if (z <= 0) { // Photon is reflected
+			// Rotate axes back to reference frame
+			double x_on_z = U.i*V.j - U.j*V.i;
+			// Empty case: the vector is already correctly oriented.
+			if !((abs(x_on_z) < 1e-8) && (abs(V.k) < 1e-8)) {
+				double phi = atan2(V.k,-x_on_z);
+				S.rotate_stokes(phi);
+				phi = atan2(U.j, -U.i);
+				S.rotate_stokes(phi);
+			}
+			I_R += S.I;
+			Q_R += S.Q;
+			U_R += S.U;
+			V_R += S.V;
+			state = DEAD;
+			
+			// Quantize x and y location, place stokes values in matrix
+					
+		}
+		else if (z >= SLABSIZE_Z) { // Photon is transmitted
+			// Rotate axes back to reference frame
+			double x_on_z = U.i*V.j - U.j*V.i;
+			// Empty case: the vector is already correctly oriented.
+			if !((abs(x_on_z) < 1e-8) && (abs(V.k) < 1e-8)) {
+				double phi = atan2(V.k,-x_on_z);
+				S.rotate_stokes(phi);
+				phi = atan2(U.j, U.i);
+				S.rotate_stokes(phi);
+			}
+			I_T += S.I;
+			Q_T += S.Q;
+			U_T += S.U;
+			V_T += S.V;
+			state = DEAD;
+
+			// Quantize x and y location, place stokes values in matrix
+		}
     }
 
-	double* rejection(void) {
-		double* angles = new double[2];
+	void rejection(void) {
+		alpha = 1.00;
+		beta = 3.14;
+		return;
+		/*double* angles = new double[2];
 		angles[0] = 1.00;
 		angles[1] = 3.14;
-		return angles;
+		return angles;*/
 	}
 
 	void rotate_about_vector(Vector& trajectory, Vector& axis, double angle) {
@@ -196,9 +248,9 @@ public:
      */
     void scatter(void) {
 		// Determine scattering angles by rejection method.
-		double* scat_angles = rejection();
+		/*double* scat_angles = rejection();
 		double alpha = scat_angles[0];
-		double beta = scat_angles[1];
+		double beta = scat_angles[1];*/
 
 		// Rotate V about U by alpha
 		rotate_about_vector(this.V, this.U, alpha);
@@ -209,8 +261,7 @@ public:
 		// TODO: Adjust the Stokes vector
 					
 
-		// TODO: does this delete the individual mallocs inside the matrix?
-		delete [] scat_angles;
+
     }
 };
 

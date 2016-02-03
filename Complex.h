@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+
 class Complex{
 private:
 	double r;
