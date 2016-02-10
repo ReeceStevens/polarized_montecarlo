@@ -3,8 +3,8 @@
 
 class Complex{
 private:
-	double r;
-	double i;
+	float r;
+	float i;
 
 public:
 	Complex(double r, double i) {
@@ -15,6 +15,11 @@ public:
 	Complex(const Complex& that) {
 		this->r = that.r;
 		this->i = that.i;
+	}
+
+	Complex() {
+		this->r = 0.0;
+		this->i = 0.0;
 	}
 
 	double Re() {

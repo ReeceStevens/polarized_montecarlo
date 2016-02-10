@@ -129,7 +129,8 @@ public:
     /* 
      * drop(void) -
      * Drop weight from the photon and determine if it is dead
-     * or out of bounds. Adjust weights accordingly.
+     * or out of bounds. Adjust weights accordingly. If photon
+	 * is dead, re-orient it to detector and record stokes vector.
      */
     void drop(void) {
         weight *= albedo; 
@@ -161,7 +162,7 @@ public:
 			V_R += S.V;
 			state = DEAD;
 			
-			// Quantize x and y location, place stokes values in matrix
+			// TODO: Quantize x and y location, place stokes values in matrix
 					
 		}
 		else if (z >= SLABSIZE_Z) { // Photon is transmitted
@@ -180,7 +181,7 @@ public:
 			V_T += S.V;
 			state = DEAD;
 
-			// Quantize x and y location, place stokes values in matrix
+			// TODO: Quantize x and y location, place stokes values in matrix
 		}
     }
 
