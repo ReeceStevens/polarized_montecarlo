@@ -32,11 +32,11 @@ double wavelength = 0.600; // TODO: microns?
 int nangles = 1000;
 
 extern "C" {
-void MIEV0_(float*, Complex*, int*, float*, int*, float*, float*, int*, int*, int*, int*, float*, 
-			float*, float*, Complex*, Complex*, Complex*, Complex*, Complex*, Complex*, 
-			float*, float**);
+    void MIEV0_(float* XX, Complex* CREFIN, int* PERFCT, float* MIMCUT, int* ANYANG, float* NUMANG, 
+                   float* XMU, int* NMOM, int* IPOLZN, int* MOMDIM, int* PRNT, float* QEXT, 
+			       float* QSCA, float* GQSC, Complex* S1, Complex* S2, Complex* SFORW, Complex* SBACK,
+                   Complex* TFORW, Complex* TBACK, float* SPIKE, float** PMOM);
 }
-
 
 int main() {
 
