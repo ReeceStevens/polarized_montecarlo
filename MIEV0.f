@@ -2,7 +2,8 @@
       SUBROUTINE MIEV0( XX, CREFIN, PERFCT, MIMCUT, ANYANG, NUMANG, XMU,
      &                  NMOM, IPOLZN, MOMDIM, PRNT, QEXT, QSCA, GQSC,
      &                  PMOM, SFORW, SBACK, S1, S2, TFORW, TBACK,
-     &                  SPIKE )
+     &                  SPIKE ) bind(C, name="MIEV0")
+          use iso_c_binding
 
 c    Computes Mie scattering and extinction efficiencies; asymmetry
 c    factor;  forward- and backscatter amplitude;  scattering

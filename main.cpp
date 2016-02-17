@@ -28,13 +28,15 @@ double V_T;
 
 float pi = 3.1415926536;
 double radius = 1.00; // TODO: check units of radius. I think microns?
-double wavelength = 0.600; // TODO: microns?
+double wavelength = 0.600; // TODO: microns?  
 int nangles = 1000;
 
-void MIEV0_(float* XX, Complex* CREFIN, int* PERFCT, float* MIMCUT, int* ANYANG, float* NUMANG, 
+extern "C" void MIEV0(float* XX, Complex* CREFIN, int* PERFCT, float* MIMCUT, int* ANYANG, 
+                    float* NUMANG, 
                    float* XMU, int* NMOM, int* IPOLZN, int* MOMDIM, int* PRNT, float* QEXT, 
 			       float* QSCA, float* GQSC, Complex* S1, Complex* S2, Complex* SFORW, Complex* SBACK,
                    Complex* TFORW, Complex* TBACK, float* SPIKE, float** PMOM);
+
 
 int main() {
 
@@ -73,7 +75,7 @@ float** PMOM; // not used.
 
 
 // Call Wiscombe's mie function to calculate S1 and S2.
-MIEV0_(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MOMDIM, PRNT, 
+MIEV0(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MOMDIM, PRNT, 
 	  &QEXT, &QSCA, &GQSC, S1, S2, &SFORW, &SBACK, TFORW, TBACK, &SPIKE, PMOM);
 
 
