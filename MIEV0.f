@@ -122,8 +122,9 @@ c                                  ** but 1100 is sufficient for most
 c                                  ** conceivable applications
 c     .. Parameters ..
 
+
       INTEGER   MAXANG, MXANG2
-      PARAMETER ( MAXANG = 501, MXANG2 = MAXANG / 2 + 1 )
+      PARAMETER ( MAXANG = 1000, MXANG2 = MAXANG / 2 + 1 )
       INTEGER   MAXTRM
       PARAMETER ( MAXTRM = 10100 )
       REAL      ONETHR
@@ -171,6 +172,13 @@ c     ..
 c                    ** Save some input variables and replace them
 c                    ** with values needed to do the self-test
 
+      print*,CREFIN
+      print*,SFORW
+      print*,SBACK
+      print*,TFORW(1)
+      print*,TFORW(2)
+      print*,TBACK(1)
+      print*,TBACK(2)
       IF( PASS1 ) CALL TESTMI( .FALSE., XX, CREFIN, MIMCUT, PERFCT,
      &                         ANYANG, NMOM, IPOLZN, NUMANG, XMU, QEXT,
      &                         QSCA, GQSC, SFORW, SBACK, S1, S2, TFORW,
@@ -594,6 +602,7 @@ c     ..
 
       IF( NMOM.NE.0 ) THEN
 
+         print*,NMOM
          IF( NMOM.LT.0 .OR. NMOM.GT.MOMDIM ) INPERR = WRTBAD( 'NMOM' )
 
          IF( ABS( IPOLZN ).GT.4444 ) INPERR = WRTBAD( 'IPOLZN' )

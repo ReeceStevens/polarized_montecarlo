@@ -10,3 +10,8 @@ all:
 
 clean:
 	rm *.o
+	rm main
+
+test:
+	make all
+	./main
