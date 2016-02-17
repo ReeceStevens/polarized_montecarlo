@@ -39,7 +39,6 @@ extern "C" void MIEV0(float* XX, fortran_complex* CREFIN, int* PERFCT, float* MI
                    fortran_complex* S1, fortran_complex* S2, 
                    fortran_complex* TFORW, fortran_complex* TBACK, float* SPIKE );
 
-
 int main() {
 
 
@@ -92,27 +91,6 @@ TBACK[0].i = 1.0;
 TBACK[1].r = 0.0;
 TBACK[1].i = 0.0;
 
-/*
-fortran_complex* TFORW = (fortran_complex*) malloc(3*sizeof(fortran_complex));
-fortran_complex TFORW1;
-TFORW1.r = 0.0;
-TFORW1.i = 0.0;
-fortran_complex TFORW2;
-TFORW2.r = 0.0;
-TFORW2.i = 0.0;
-TFORW[0] = TFORW1;
-TFORW[1] = TFORW2;
-
-fortran_complex* TBACK = (fortran_complex*) malloc(3*sizeof(fortran_complex));
-fortran_complex TBACK1;
-TBACK1.r = 0.0;
-TBACK1.i = 0.0;
-fortran_complex TBACK2;
-TBACK2.r = 0.0;
-TBACK2.i = 0.0;
-TBACK[0] = TBACK1;
-TBACK[1] = TBACK2;
-*/
 float SPIKE;
 float* PMOM = new float[4*4] ; // not used.
 
@@ -121,18 +99,15 @@ float* PMOM = new float[4*4] ; // not used.
 MIEV0(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MOMDIM, PRNT, 
 	  &QEXT, &QSCA, &GQSC, PMOM, &SFORW, &SBACK,  S1, S2, TFORW, TBACK, &SPIKE);
 
-    printf("Mie finished!\n");
 
 	// Check Mie by printing
-	for (int i = 0; i < NUMANG; i ++) {
+	/*for (int i = 0; i < NUMANG; i ++) {
 		printf("S1[%d]: %f, %f. S2[%d]: %f, %f \n", i, S1[i].r, S1[i].i, i, S2[i].r, S2[i].i);
 		//printf("S1[%d]: %f, %f. S2[%d]: %f, %f \n", i, S1[i].Re(), S1[i].Im(), i, S2[i].Re(), S2[i].Im());
-	}
+	}*/
 
-    //delete [] TFORW;
-    //delete [] TBACK;
-    free(TFORW);
-    free(TBACK);
+    delete [] TFORW;
+    delete [] TBACK;
 	delete [] XMU;
 	delete [] PRNT;	
 	delete [] S1;
