@@ -6,9 +6,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <math.h>
-#include "Complex.h"
 
+double nphotons = 1000000;
 /* Create Global Variables */
 // Stokes vector collector for reflected photons
 double I_R;	
@@ -25,12 +26,32 @@ double V_T;
 /* Mie Setup */
 
 struct fortran_complex{ float r,i; };
-//typedef struct fortran_complex fortran_complex;
+double complx_abs(fortran_complex a) {
+    double abs = sqrt(a.r*a.r + a.i*a.i);
+    return abs;  
+}
+fortran_complex complx_mult(fortran_complex a, fortran_complex b) {
+    fortran_complex product;
+    product.r = a.r*b.r - a.i*b.i;
+    product.i = a.r*b.i + a.i*b.r;
+    return product; 
+}
+fortran_complex complx_conj(fortran_complex a) {
+    fortran_complex result;
+    result.r = a.r;
+    result.i = -a.i;
+    return result;
+}
 
 float pi = 3.1415926536;
 double radius = 1.00; // TODO: check units of radius. I think microns?
 double wavelength = 0.600; // TODO: microns?  
 int nangles = 1000;
+
+double* s11 = new double[nangles];
+double* s12 = new double[nangles];
+double* s33 = new double[nangles];
+double* s43 = new double[nangles];
 
 extern "C" void MIEV0(float* XX, fortran_complex* CREFIN, int* PERFCT, float* MIMCUT, int* ANYANG, 
                     int* NUMANG, 
@@ -39,9 +60,11 @@ extern "C" void MIEV0(float* XX, fortran_complex* CREFIN, int* PERFCT, float* MI
                    fortran_complex* S1, fortran_complex* S2, 
                    fortran_complex* TFORW, fortran_complex* TBACK, float* SPIKE );
 
+#include "photons.h"
+
 int main() {
 
-
+srand(time(NULL));
 // Mie scattering variables. Passed into Wiscombe's mie scattering subroutine.
 // Initial values taken from Ramella et. al. model.
 // INPUT
@@ -98,6 +121,33 @@ float* PMOM = new float[4*4] ; // not used.
 // Call Wiscombe's mie function to calculate S1 and S2.
 MIEV0(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MOMDIM, PRNT, 
 	  &QEXT, &QSCA, &GQSC, PMOM, &SFORW, &SBACK,  S1, S2, TFORW, TBACK, &SPIKE);
+
+
+for (int i = 0; i < nangles; i ++) {
+    s11[i] = 0.5*(complx_abs(S2[i])*complx_abs(S2[i]) + complx_abs(S1[i])*complx_abs(S1[i]));
+    s12[i] = 0.5*(complx_abs(S2[i])*complx_abs(S2[i]) - complx_abs(S1[i])*complx_abs(S1[i]));
+    fortran_complex intermediate = complx_mult(complx_conj(S1[i]), S2[i]);
+    s33[i] = intermediate.r;
+    s43[i] = intermediate.i;
+}
+
+    printf("Beginning simulation\n");
+    // Begin simulation
+    for (int i = 0; i < nphotons; i ++ ) {
+        //printf("Launching photon %d\n", i);
+        photon a;
+        while (a.alive()) {
+            a.move();
+            a.drop();
+            if (!a.alive()) { break; }
+            a.rejection();
+            a.scatter();
+        }
+    }
+
+
+    printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R/(nphotons),Q_R/(nphotons),U_R/(nphotons),V_R/(nphotons));	
+    printf("T= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_T/(nphotons),Q_T/(nphotons),U_T/(nphotons),V_T/(nphotons));	
 
     delete [] TFORW;
     delete [] TBACK;

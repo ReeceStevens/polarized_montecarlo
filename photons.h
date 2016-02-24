@@ -3,8 +3,6 @@
 #include <math.h>
 
 #include "Vector.h"
-#include "Complex.h"
-#include "mie.h"
 
 #ifndef __photons__h
 #define __photons__h 1
@@ -31,7 +29,7 @@
 /* Properties of the medium */
 #define SLABSIZE_X 10
 #define SLABSIZE_Y 10
-#define SLABSIZE_Z 30
+#define SLABSIZE_Z 1
 #define MU_S 0.4
 #define MU_A 0.5
 #define ALBEDO ((MU_S) / (MU_S + MU_A))
@@ -50,16 +48,18 @@ const double survival_chance = 1 / survival_multiplier;
 /* Some random number generator that produces a uniform 
  * distribution of numbers from (0,1].
  */
-double rand_num();
+double rand_num() {
+   double r = ((double) rand() / RAND_MAX); 
+   return r;
+}
 
 /* Track polarization state of photon via Stokes vector */
 struct stokes_v {
-private:
+public:
     double I;
     double Q;
     double U;
     double V;
-public:
     stokes_v(void) { I = 0; Q = 0; U = 0; V = 0; }
     stokes_v(double I, double Q, double U, double V) : I(I), Q(Q), U(U), V(V) { }; 
 	stokes_v(const stokes_v& that) {
@@ -77,17 +77,15 @@ public:
 		this->Q = old_q*cos_2phi + old_u*sin_2phi;
 		this->U = -old_q*sin_2phi + old_u*cos_2phi;
 	}
+    void normalize() {
+        if (I = 0) { return; }
+        Q = Q/I;
+        U = U/I;
+        V = V/I;
+        I = 1.0;
+    }
 };
 
-struct reference_frame {
-private:
-	Vector V;
-	Vector U;
-public:	
-	Vector returnThird() {
-		return Vector.cross_prod(V,U);
-	}
-};
 
 struct photon {
 private:
@@ -113,6 +111,10 @@ public:
         Vector U(0,0,1);
         state = ALIVE;
     } 
+
+    bool alive() {
+        return state; 
+    }
 
     /* 
      * move(void) -
@@ -194,8 +196,8 @@ public:
         do {
             theta = acos(2*rand_num() - 1); // TODO: why do we need to do 2*rand - 1? isn't this redundant?
             phi = 2*M_PI*rand_num();
-            Io = s11[0]*S.I + s12[i]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
-            i = floor(theta*nangles / M_PI);
+            Io = s11[0]*S.I + s12[0]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
+            int i = floor(theta*nangles / M_PI);
             Iith = s11[i]*S.I + s12[i]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
         } while (rand_num()*Io <= Iith);
 
@@ -251,23 +253,79 @@ public:
 	}
 
     /*
-     * TODO:
      * scatter(void) - 
      * Performs scattering based on the polarizing angle and scattering
      * particles in the media. For spheres, use Mie scattering theory.
      */
     void scatter(void) {
-        
-		// Rotate V about U by alpha
-		rotate_about_vector(V, U, alpha);
 
-		// Rotate U about new V by beta
-		rotate_about_vector(U, V, beta);
+        /* Step 1: Update directional cosine for alpha and beta */
 
-		// TODO: Adjust the Stokes vector
+        double cos_alpha = cos(alpha);
+        double sin_alpha = sin(alpha);
+        double cos_beta = cos(beta);
+        double sin_beta = sin(beta); 
+        double old_ui = U.i;
+        double old_uj = U.j;
+        double old_uk = U.k;
+
+        // Shortcut for when we are just about perpendicular to z axis
+        if (1 - U.k <= 1e-12) {
+            U.i = sin_alpha*cos_beta;
+            U.j = sin_alpha*sin_beta;
+            if (U.k > 0) {
+                U.k = cos_alpha;
+            } else {
+                U.k = -cos_alpha;
+            }
+        }
+        else {
+            // Placeholders for the calculation
+            double sin_z = sqrt(1-(U.k)*(U.k));
+
+            U.i = sin_alpha*(old_ui*old_uk*cos_beta - old_uj*sin_beta) / (sin_z + old_ui*cos_alpha);
+            U.j = sin_alpha*(old_uj*old_uk*cos_beta + old_ui*sin_beta) / (sin_z + old_uj*cos_alpha);
+            U.k = -sin_alpha*cos_beta*sin_z + old_uk*cos_alpha;
+        }
+
+        /* Step 2: Rotate Stokes vector by beta */
+        // Placeholders for step 4
+        double si = S.I;
+        double sq = S.Q;
+        double su = S.U;
+        double sv = S.V;
+        S.rotate_stokes(beta);
+
+        /* Step 3: Multiply Stokes by scattering matrix */
+
+        int ithedeg = floor(alpha*nangles/M_PI);
+
+		S.I= s11[ithedeg]*si+s12[ithedeg]*sq;
+			
+		S.Q= s12[ithedeg]*si+s11[ithedeg]*sq;
+
+		S.U= s33[ithedeg]*su+s43[ithedeg]*sv;
+			
+		S.V= -s43[ithedeg]*su+s33[ithedeg]*sv;
 	    	
+        /* Step 4: Rotate Stokes again to get back into reference frame */
+        /* TODO: Figure out why this is a necessary step. */
 
-
+        double denominator = sqrt(1-cos_alpha*cos_alpha)*sqrt(1-U.k*U.k);
+        double cosi;
+        if (denominator <= 1e-12) { cosi = 0; }
+        else {
+            if ((beta > M_PI) && (beta < 2*M_PI)) {
+                cosi = (U.k*cos_alpha - old_uk) / denominator;
+            } else {
+                cosi = -(U.k*cos_alpha - old_uk) / denominator;
+                if (cosi > 1) { cosi = 1; }
+                else if (cosi < -1) { cosi = -1;}
+            }
+        }
+        // Rotate stokes vector clockwise by i
+        S.rotate_stokes(2*M_PI - acos(cosi));
+        S.normalize();
     }
 };
 
