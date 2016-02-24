@@ -92,7 +92,7 @@ public:
 struct photon {
 private:
     stokes_v S;
-    Vector V; // Orientation vector
+    //Vector V; // Orientation vector
     Vector U; // Direction cosine vector
     int32_t x;
     int32_t y;
@@ -109,7 +109,7 @@ public:
         x = SLABSIZE_X / 2;
         y = SLABSIZE_Y / 2;
         z = 0;
-        Vector V(0,0,1);
+        //Vector V(0,0,1);
         Vector U(0,0,1);
         state = ALIVE;
     } 
@@ -148,14 +148,14 @@ public:
         // Check boundaries
 		if (z <= 0) { // Photon is reflected
 			// Rotate axes back to reference frame
-			double x_on_z = U.i*V.j - U.j*V.i;
+			//double x_on_z = U.i*V.j - U.j*V.i;
 			// Empty case: the vector is already correctly oriented.
-			if !((abs(x_on_z) < 1e-8) && (abs(V.k) < 1e-8)) {
-				double phi = atan2(V.k,-x_on_z);
+			//if !((abs(x_on_z) < 1e-8) && (abs(V.k) < 1e-8)) {
+				//double phi = atan2(V.k,-x_on_z);
+				//S.rotate_stokes(phi);
+				double phi = atan2(U.j, -U.i);
 				S.rotate_stokes(phi);
-				phi = atan2(U.j, -U.i);
-				S.rotate_stokes(phi);
-			}
+			//}
 			I_R += S.I;
 			Q_R += S.Q;
 			U_R += S.U;
@@ -167,14 +167,14 @@ public:
 		}
 		else if (z >= SLABSIZE_Z) { // Photon is transmitted
 			// Rotate axes back to reference frame
-			double x_on_z = U.i*V.j - U.j*V.i;
+			//double x_on_z = U.i*V.j - U.j*V.i;
 			// Empty case: the vector is already correctly oriented.
-			if !((abs(x_on_z) < 1e-8) && (abs(V.k) < 1e-8)) {
-				double phi = atan2(V.k,-x_on_z);
-				S.rotate_stokes(phi);
-				phi = atan2(U.j, U.i);
-				S.rotate_stokes(phi);
-			}
+			//if !((abs(x_on_z) < 1e-8) && (abs(V.k) < 1e-8)) {
+				//double phi = atan2(V.k,-x_on_z);
+				//S.rotate_stokes(phi);
+			double phi = -atan2(U.j, U.i);
+			S.rotate_stokes(phi);
+			//}
 			I_T += S.I;
 			Q_T += S.Q;
 			U_T += S.U;
@@ -185,14 +185,23 @@ public:
 		}
     }
 
+    /*
+     * rejection() - choose alpha and beta angles for scattering
+     */
 	void rejection(void) {
-		alpha = 1.00;
-		beta = 3.14;
+        // Placeholder locals for choosing rejection angle alpha
+        double theta, phi, Io, Iith;
+        do {
+            theta = acos(2*rand_num() - 1); // TODO: why do we need to do 2*rand - 1? isn't this redundant?
+            phi = 2*M_PI*rand_num();
+            Io = s11[0]*S.I + s12[i]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
+            i = floor(theta*nangles / M_PI);
+            Iith = s11[i]*S.I + s12[i]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
+        } while (rand_num()*Io <= Iith);
+
+		alpha = theta;
+		beta = phi;
 		return;
-		/*double* angles = new double[2];
-		angles[0] = 1.00;
-		angles[1] = 3.14;
-		return angles;*/
 	}
 
 	void rotate_about_vector(Vector& trajectory, Vector& axis, double angle) {
@@ -248,19 +257,15 @@ public:
      * particles in the media. For spheres, use Mie scattering theory.
      */
     void scatter(void) {
-		// Determine scattering angles by rejection method.
-		/*double* scat_angles = rejection();
-		double alpha = scat_angles[0];
-		double beta = scat_angles[1];*/
-
+        
 		// Rotate V about U by alpha
-		rotate_about_vector(this.V, this.U, alpha);
+		rotate_about_vector(V, U, alpha);
 
 		// Rotate U about new V by beta
-		rotate_about_vector(this.U, this.V, beta);
+		rotate_about_vector(U, V, beta);
 
 		// TODO: Adjust the Stokes vector
-					
+	    	
 
 
     }

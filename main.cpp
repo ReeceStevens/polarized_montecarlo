@@ -99,13 +99,6 @@ float* PMOM = new float[4*4] ; // not used.
 MIEV0(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MOMDIM, PRNT, 
 	  &QEXT, &QSCA, &GQSC, PMOM, &SFORW, &SBACK,  S1, S2, TFORW, TBACK, &SPIKE);
 
-
-	// Check Mie by printing
-	/*for (int i = 0; i < NUMANG; i ++) {
-		printf("S1[%d]: %f, %f. S2[%d]: %f, %f \n", i, S1[i].r, S1[i].i, i, S2[i].r, S2[i].i);
-		//printf("S1[%d]: %f, %f. S2[%d]: %f, %f \n", i, S1[i].Re(), S1[i].Im(), i, S2[i].Re(), S2[i].Im());
-	}*/
-
     delete [] TFORW;
     delete [] TBACK;
 	delete [] XMU;
