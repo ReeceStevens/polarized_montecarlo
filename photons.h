@@ -78,7 +78,7 @@ public:
 		this->U = -old_q*sin_2phi + old_u*cos_2phi;
 	}
     void normalize() {
-        if (I = 0) { return; }
+        if (I == 0) { return; }
         Q = Q/I;
         U = U/I;
         V = V/I;
