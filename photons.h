@@ -71,7 +71,7 @@ public:
 		this->U = -old_q*sin_2phi + old_u*cos_2phi;
 	}
     void normalize() {
-        if (I == 0) { return; }
+        if (I <= 1e-6) { return; }
         Q = Q/I;
         U = U/I;
         V = V/I;
@@ -82,17 +82,17 @@ public:
 
 struct photon {
 private:
-    stokes_v S;
     //Vector V; // Orientation vector
     Vector U; // Direction cosine vector
-    int32_t x;
-    int32_t y;
-    int32_t z;
+    double x;
+    double y;
     double weight;
 	double alpha; // scattering angles
 	double beta; // scattering angles
     bool state; // Alive or dead
 public:
+    stokes_v S;
+    double z;
     // Default constructor.
     photon(void) {
         weight = 1;
@@ -126,9 +126,9 @@ public:
     void move(void) {
        // printf("S.I: %5.5f  S.Q: %5.5f  S.U: %5.5f  S.V: %5.5f\n",S.I,S.Q,S.U,S.V);
         double deltaS = -log(rand_num()) / (mu_a+mu_s);
-        x = x + U.i * deltaS;
-        y = y + U.j * deltaS;
-        z = z + U.k * deltaS;
+        x += U.i * deltaS;
+        y += U.j * deltaS;
+        z += U.k * deltaS;
     }
 
     /* 
@@ -152,7 +152,7 @@ public:
             } 
         }
         // Check boundaries
-		if (z < 0) { // Photon is reflected
+		if (this->z < 0) { // Photon is reflected
 			// Rotate axes back to reference frame
 			//double x_on_z = U.i*V.j - U.j*V.i;
 			// Empty case: the vector is already correctly oriented.
@@ -168,11 +168,11 @@ public:
 			V_R += S.V;
 			state = DEAD;
 			
-            printf("Dead by exiting\n");
+            //printf("Dead by exiting\n");
 			// TODO: Quantize x and y location, place stokes values in matrix
 					
 		}
-		else if (z >= slabdepth) { // Photon is transmitted
+		else if (this->z >= slabdepth) { // Photon is transmitted
 			// Rotate axes back to reference frame
 			//double x_on_z = U.i*V.j - U.j*V.i;
 			// Empty case: the vector is already correctly oriented.
@@ -188,7 +188,7 @@ public:
 			V_T += S.V;
 			state = DEAD;
 
-            printf("Dead by exiting\n");
+            //printf("Dead by exiting\n");
 			// TODO: Quantize x and y location, place stokes values in matrix
 		}
     }
@@ -322,18 +322,18 @@ public:
 
         double denominator = sqrt(1-cos_alpha*cos_alpha)*sqrt(1-U.k*U.k);
         double cosi;
-        if (denominator <= 1e-12) { cosi = 0; }
+        if (denominator <= 1e-12) { S.rotate_stokes(3*M_PI/2); }
         else {
             if ((beta > M_PI) && (beta < 2*M_PI)) {
                 cosi = (U.k*cos_alpha - old_uk) / denominator;
             } else {
                 cosi = -(U.k*cos_alpha - old_uk) / denominator;
-                if (cosi > 1) { cosi = 1; }
-                else if (cosi < -1) { cosi = -1;}
             }
+            if (cosi > 1) { S.rotate_stokes(2*M_PI); }
+            else if (cosi < -1) { S.rotate_stokes(M_PI);}
+            else { S.rotate_stokes(2*M_PI - acos(cosi)); }
         }
         // Rotate stokes vector clockwise by i
-        S.rotate_stokes(2*M_PI - acos(cosi));
         S.normalize();
     }
 };

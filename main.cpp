@@ -12,16 +12,16 @@
 double nphotons = 1000000;
 /* Create Global Variables */
 // Stokes vector collector for reflected photons
-double I_R;	
-double Q_R;	
-double U_R;	
-double V_R;	
+double I_R = 0;
+double Q_R = 0;	
+double U_R = 0;	
+double V_R = 0;	
 
 // Stokes vector collector for transmitted photons
-double I_T;	
-double Q_T;	
-double U_T;	
-double V_T;	
+double I_T = 0;	
+double Q_T = 0;	
+double U_T = 0;	
+double V_T = 0;	
 
 /* Mie Setup */
 
@@ -140,8 +140,8 @@ for (int i = 0; i < nangles; i ++) {
     s33[i] = intermediate.r;
     s43[i] = intermediate.i;
 }
-
-    printf("Beginning simulation\n");
+    printf("Beginning simulation... ");
+    fflush(stdout);
     // Begin simulation
     for (int i = 0; i < nphotons; i ++ ) {
         //printf("Launching photon %d\n", i);
@@ -151,7 +151,8 @@ for (int i = 0; i < nangles; i ++) {
             a.move();
             a.drop();
             if (!a.alive()) { 
-               printf("Photon %d survived %d rounds.\n", i, j);
+                //printf("%5.5f %5.5f %5.5f %5.5f \n",a.S.I,a.S.Q, a.S.U, a.S.V);
+               //printf("Photon %d survived %d rounds.\n", i, j);
                 break;
             }
             a.rejection();
@@ -160,7 +161,8 @@ for (int i = 0; i < nangles; i ++) {
         }
     }
 
-
+    printf("Simulation done!\n");
+    printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R,Q_R,U_R,V_R);	
     printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R/(nphotons),Q_R/(nphotons),U_R/(nphotons),V_R/(nphotons));	
     printf("T= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_T/(nphotons),Q_T/(nphotons),U_T/(nphotons),V_T/(nphotons));	
 
