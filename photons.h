@@ -26,16 +26,6 @@
 // Validation using newest Ramella paper. compare to ramella output for validation.
 
 
-/* Properties of the medium */
-#define SLABSIZE_X 10
-#define SLABSIZE_Y 10
-#define SLABSIZE_Z 1
-#define MU_S 0.4
-#define MU_A 0.5
-#define ALBEDO ((MU_S) / (MU_S + MU_A))
-#define MU_TOTAL (MU_A + MU_S)
-const double mu_total = MU_A + MU_S;
-const double albedo = MU_S / (mu_total);
 
 /* Properties of the light */
 
@@ -49,7 +39,10 @@ const double survival_chance = 1 / survival_multiplier;
  * distribution of numbers from (0,1].
  */
 double rand_num() {
-   double r = ((double) rand() / RAND_MAX); 
+   double r = 0;
+   do {
+     r = ((double) rand() / RAND_MAX); 
+   } while (r == 0);
    return r;
 }
 
@@ -95,21 +88,30 @@ private:
     int32_t x;
     int32_t y;
     int32_t z;
-    uint32_t weight;
-	double alpha = 0; // scattering angles
-	double beta = 0; // scattering angles
+    double weight;
+	double alpha; // scattering angles
+	double beta; // scattering angles
     bool state; // Alive or dead
 public:
     // Default constructor.
     photon(void) {
         weight = 1;
         // Start at center and top of slab
-        x = SLABSIZE_X / 2;
-        y = SLABSIZE_Y / 2;
+        x = 0; 
+        y = 0;
         z = 0;
+        S.I = 1.0;
+        S.Q = 1.0;
+        S.U = 0.0;
+        S.V = 0.0; 
         //Vector V(0,0,1);
-        Vector U(0,0,1);
+        U.i = 0.0;
+        U.j = 0.0;
+        U.k = 1.0;
+        //Vector U(0,0,1);
         state = ALIVE;
+	    alpha = 0; // scattering angles
+	    beta = 0; // scattering angles
     } 
 
     bool alive() {
@@ -122,7 +124,8 @@ public:
      * orientation and properties of the medium.
      */
     void move(void) {
-        double deltaS = -log(rand_num()) / mu_total;
+       // printf("S.I: %5.5f  S.Q: %5.5f  S.U: %5.5f  S.V: %5.5f\n",S.I,S.Q,S.U,S.V);
+        double deltaS = -log(rand_num()) / (mu_a+mu_s);
         x = x + U.i * deltaS;
         y = y + U.j * deltaS;
         z = z + U.k * deltaS;
@@ -140,15 +143,16 @@ public:
         if (weight < WEIGHT_CUTOFF) {  
             // Russian Roulette for photon absorption
             double rand = rand_num();
-            if (rand > survival_chance) {
+            if (rand <= survival_chance) {
                 weight = 0;  
                 state = DEAD;
+                printf("Dead by absorption\n");
             } else {    
                 weight *= survival_multiplier; 
             } 
         }
         // Check boundaries
-		if (z <= 0) { // Photon is reflected
+		if (z < 0) { // Photon is reflected
 			// Rotate axes back to reference frame
 			//double x_on_z = U.i*V.j - U.j*V.i;
 			// Empty case: the vector is already correctly oriented.
@@ -164,10 +168,11 @@ public:
 			V_R += S.V;
 			state = DEAD;
 			
+            printf("Dead by exiting\n");
 			// TODO: Quantize x and y location, place stokes values in matrix
 					
 		}
-		else if (z >= SLABSIZE_Z) { // Photon is transmitted
+		else if (z >= slabdepth) { // Photon is transmitted
 			// Rotate axes back to reference frame
 			//double x_on_z = U.i*V.j - U.j*V.i;
 			// Empty case: the vector is already correctly oriented.
@@ -183,6 +188,7 @@ public:
 			V_T += S.V;
 			state = DEAD;
 
+            printf("Dead by exiting\n");
 			// TODO: Quantize x and y location, place stokes values in matrix
 		}
     }
@@ -192,14 +198,17 @@ public:
      */
 	void rejection(void) {
         // Placeholder locals for choosing rejection angle alpha
-        double theta, phi, Io, Iith;
+        double theta, phi, Io, Iith, rand_no;
         do {
+            //printf("S.I: %5.5f  S.Q: %5.5f  S.U: %5.5f  S.V: %5.5f\n",S.I,S.Q,S.U,S.V);
             theta = acos(2*rand_num() - 1); // TODO: why do we need to do 2*rand - 1? isn't this redundant?
             phi = 2*M_PI*rand_num();
             Io = s11[0]*S.I + s12[0]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
             int i = floor(theta*nangles / M_PI);
             Iith = s11[i]*S.I + s12[i]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
-        } while (rand_num()*Io <= Iith);
+            rand_no = rand_num();
+            //printf("rand_no: %5.5f\nIo: %5.5f\nIo*rand_no: %5.5f\nIith: %5.5f\n",rand_no,Io,rand_no*Io, Iith);
+        } while (rand_no*Io <= Iith);
 
 		alpha = theta;
 		beta = phi;
