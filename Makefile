@@ -6,7 +6,8 @@ all:
 	gfortran -c *.f
 	g++ -c main.cpp
 	#gfortran -o main *.o -lstdc++ -lm
-	g++ -O ${OBJECTS} -lm -lgfortran -o main
+	g++ -O ${OBJECTS} -lm -o main
+	#g++ -O ${OBJECTS} -lm -lgfortran -o main
 
 clean:
 	rm *.o
