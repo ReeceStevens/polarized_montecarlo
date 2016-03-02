@@ -129,6 +129,7 @@ MIEV0(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MO
 mu_s = QSCA*M_PI*radius*radius*rho*1e4; // inverse cm
 slabdepth = 4/mu_s;
 albedo = mu_s / (mu_s + mu_a);
+mu_s *= (1-0.91032); // TODO: attempting to compensate for backscattering
 
 printf("Mie properties: \ndiameter=%5.5f\nmu_s=%5.5f\nrho=%5.5f\nslabdepth=%5.5f\nQSCA=%5.5f\n", radius*2, mu_s, rho, slabdepth, QSCA);
 
@@ -162,7 +163,6 @@ for (int i = 0; i < nangles; i ++) {
     }
 
     printf("Simulation done!\n");
-    printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R,Q_R,U_R,V_R);	
     printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R/(nphotons),Q_R/(nphotons),U_R/(nphotons),V_R/(nphotons));	
     printf("T= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_T/(nphotons),Q_T/(nphotons),U_T/(nphotons),V_T/(nphotons));	
 
