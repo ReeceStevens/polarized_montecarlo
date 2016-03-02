@@ -129,9 +129,11 @@ MIEV0(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MO
 mu_s = QSCA*M_PI*radius*radius*rho*1e4; // inverse cm
 slabdepth = 4/mu_s;
 albedo = mu_s / (mu_s + mu_a);
-mu_s *= (1-0.91032); // TODO: attempting to compensate for backscattering
+double g = GQSC / QSCA;
 
-printf("Mie properties: \ndiameter=%5.5f\nmu_s=%5.5f\nrho=%5.5f\nslabdepth=%5.5f\nQSCA=%5.5f\n", radius*2, mu_s, rho, slabdepth, QSCA);
+printf("Mie properties: \ndiameter=%5.5f\nmu_s=%5.5f\nrho=%5.5f\nslabdepth=%5.5f\nasymmetry factor=%5.5f\n", radius*2, mu_s, rho, slabdepth, g);
+
+mu_s *= (1-g); // TODO: attempting to compensate for backscattering
 
 for (int i = 0; i < nangles; i ++) {
     //printf("S1[%d]: %5.5f   S2[%d]: %5.5f\n",i,S1[i].r,i,S2[i].r);
