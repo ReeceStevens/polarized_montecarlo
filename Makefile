@@ -2,11 +2,14 @@ SHELL:=/bin/bash
 
 OBJECTS = main.o MIEV0.o ErrPack.o 
 
+C_COMPILER=g++-5
+F_COMPILER=gfortran
+
 all:
-	gfortran -c *.f
-	g++ -c main.cpp
+	${F_COMPILER} -c *.f
+	${C_COMPILER} -c main.cpp
 	#gfortran -o main *.o -lstdc++ -lm
-	g++ -O ${OBJECTS} -lm -lgfortran -o main
+	${C_COMPILER} -O ${OBJECTS} -lm -lgfortran -o main
 
 clean:
 	rm *.o
