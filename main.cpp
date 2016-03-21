@@ -134,7 +134,15 @@ double g = GQSC / QSCA;
 
 printf("Mie properties: \ndiameter=%5.5f\nmu_s=%5.5f\nrho=%5.5f\nslabdepth=%5.5f\nasymmetry factor=%5.5f\n", radius*2, mu_s, rho, slabdepth, g);
 
-mu_s *= (1-g); // TODO: attempting to compensate for backscattering
+mu_s *= (1-g); // Compensating for backscattering
+
+int grid_res = 100;
+// TODO: Break down and optimize this placement code
+const double hw = 7/mu_s;
+const double dx = 2.0*hw/grid_res;
+const double dy = 2.0*hw/grid_res;
+
+double* I_R_Grid = new double[(grid_res-1)*(grid_res-1)];
 
 for (int i = 0; i < nangles; i ++) {
     //printf("S1[%d]: %5.5f   S2[%d]: %5.5f\n",i,S1[i].r,i,S2[i].r);
@@ -178,6 +186,8 @@ for (int i = 0; i < nangles; i ++) {
             a.scatter();
             j ++;
         }
+		// TODO: print out map based on photon location	
+			
     }
 	printf("Round %d:\n", j);
     printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R/(nphotons),Q_R/(nphotons),U_R/(nphotons),V_R/(nphotons));	

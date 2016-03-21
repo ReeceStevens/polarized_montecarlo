@@ -86,13 +86,13 @@ struct photon {
 private:
     //Vector V; // Orientation vector
     Vector U; // Direction cosine vector
-    double x;
-    double y;
     double weight;
 	double alpha; // scattering angles
 	double beta; // scattering angles
     bool state; // Alive or dead
 public:
+    double x;
+    double y;
     stokes_v S;
     double z;
     // Default constructor.
