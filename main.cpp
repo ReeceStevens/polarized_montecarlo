@@ -43,7 +43,7 @@ fortran_complex complx_conj(fortran_complex a) {
     return result;
 }
 
-double radius = (2.03/2); // Radius of spherical scatterer 
+double radius = (2.0/2); // Radius of spherical scatterer 
 double wavelength = 0.6328; // wavelength of incident beam 
 double rho = 1.152e-4; // Density of spherical scatterers in medium
 int nangles = 1000;
@@ -71,14 +71,14 @@ srand(time(NULL));
 // Mie scattering variables. Passed into Wiscombe's mie scattering subroutine.
 // Initial values taken from Ramella et. al. model.
 // INPUT
-float XX= (float) (2 * M_PI * radius / wavelength); // Size parameter
-//float XX= 10.0; // Test value
 //Complex CREFIN((1.59/1.33),0.0); // fortran_complex refractive index
 fortran_complex CREFIN;
 CREFIN.r = (1.59/1.33);
 CREFIN.i = 0.0;
 int PERFCT = 0; // false, refractive index is not infinite.
 float MIMCUT = 1e-6; // TODO: is this correct for cutoff of imaginary index, since it's already zero?
+float XX= (float) (2 * M_PI * radius / (wavelength/1.33)); // Size parameter
+//float XX= 10.0; // Test value
 int ANYANG = 0; // Angles are monotone increasing and mirror symmetric around 90 degrees
 int NUMANG = nangles; // number of angles to be evaluated for S1 and S2.
 float* XMU = new float[nangles];
@@ -92,8 +92,9 @@ int MOMDIM = 1; // Not used.
 int* PRNT = new int[2];
 PRNT[0] = 0;
 PRNT[1] = 0;
-// OUTPUT
-float QEXT, QSCA, GQSC; // Extinction efficiency factor, scattering efficiency factor, and asymmetry factor
+/* OUTPUT */
+// Extinction efficiency factor, scattering efficiency factor, and asymmetry factor
+float QEXT, QSCA, GQSC; 
 // Mie scattering amplitudes (what we need!)
 fortran_complex* S1 = new fortran_complex[nangles];
 fortran_complex* S2 = new fortran_complex[nangles];
@@ -146,10 +147,25 @@ for (int i = 0; i < nangles; i ++) {
     printf("Beginning simulation... ");
     fflush(stdout);
     // Begin simulation
+	for (int j = 0; j < 4; j ++) {
     for (int i = 0; i < nphotons; i ++ ) {
         //printf("Launching photon %d\n", i);
         photon a;
         int j = 0;
+		switch(j) {
+			case 0:
+				a.setStokes(1,1,0,0);
+				break;
+			case 1:
+				a.setStokes(1,-1,0,0);
+				break;
+			case 2:
+				a.setStokes(1,0,1,0);
+				break;
+			case 3: 
+				a.setStokes(1,0,0,1);
+				break;
+		}
         while (a.alive()) {
             a.move();
             a.drop();
@@ -163,10 +179,12 @@ for (int i = 0; i < nangles; i ++) {
             j ++;
         }
     }
-
-    printf("Simulation done!\n");
+	printf("Round %d:\n", j);
     printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R/(nphotons),Q_R/(nphotons),U_R/(nphotons),V_R/(nphotons));	
     printf("T= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_T/(nphotons),Q_T/(nphotons),U_T/(nphotons),V_T/(nphotons));	
+	}
+
+    printf("Simulation done!\n");
 
     delete [] TFORW;
     delete [] TBACK;

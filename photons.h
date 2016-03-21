@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 #include "Vector.h"
 
@@ -100,8 +102,8 @@ public:
         x = 0; 
         y = 0;
         z = 0;
-        S.I = 1.0;
-        S.Q = 1.0;
+        S.I = 0.0;
+        S.Q = 0.0;
         S.U = 0.0;
         S.V = 0.0; 
         //Vector V(0,0,1);
@@ -113,6 +115,13 @@ public:
 	    alpha = 0; // scattering angles
 	    beta = 0; // scattering angles
     } 
+
+	void setStokes(double i, double q, double u, double v) {
+		S.I = i;
+		S.Q = q;
+		S.U = u;
+		S.V = v;
+	}
 
     bool alive() {
         return state; 
