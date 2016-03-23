@@ -73,7 +73,7 @@ public:
 		this->U = -old_q*sin_2phi + old_u*cos_2phi;
 	}
     void normalize() {
-        if (I <= 1e-6) { return; }
+        if (I <= 1e-6) {printf("Small intensity problem!\n"); return; }
         Q = Q/I;
         U = U/I;
         V = V/I;
@@ -91,8 +91,8 @@ private:
 	double beta; // scattering angles
     bool state; // Alive or dead
 public:
-    double x;
-    double y;
+    double x; // Lateral x position (cm)
+    double y; // Lateral y position (cm)
     stokes_v S;
     double z;
     // Default constructor.
@@ -168,7 +168,7 @@ public:
 			//if !((abs(x_on_z) < 1e-8) && (abs(V.k) < 1e-8)) {
 				//double phi = atan2(V.k,-x_on_z);
 				//S.rotate_stokes(phi);
-				double phi = atan2(U.j, -U.i);
+				double phi = atan2(U.j, U.i);
 				S.rotate_stokes(phi);
 			//}
 			I_R += S.I;
@@ -176,10 +176,6 @@ public:
 			U_R += S.U;
 			V_R += S.V;
 			state = DEAD;
-			
-            //printf("Dead by exiting\n");
-			// TODO: Quantize x and y location, place stokes values in matrix
-					
 		}
 		else if (this->z >= slabdepth) { // Photon is transmitted
 			// Rotate axes back to reference frame
@@ -197,8 +193,6 @@ public:
 			V_T += S.V;
 			state = DEAD;
 
-            //printf("Dead by exiting\n");
-			// TODO: Quantize x and y location, place stokes values in matrix
 		}
     }
 
@@ -208,21 +202,24 @@ public:
 	void rejection(void) {
         // Placeholder locals for choosing rejection angle alpha
         double theta, phi, Io, Iith, rand_no;
+		int i = 0;
         do {
+			i++;
             //printf("S.I: %5.5f  S.Q: %5.5f  S.U: %5.5f  S.V: %5.5f\n",S.I,S.Q,S.U,S.V);
             theta = acos(2*rand_num() - 1); // TODO: why do we need to do 2*rand - 1? isn't this redundant?
             phi = 2*M_PI*rand_num();
             Io = s11[0]*S.I + s12[0]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
-            int i = floor(theta*nangles / M_PI);
+            int i = floor(theta / M_PI * nangles);
             Iith = s11[i]*S.I + s12[i]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
             rand_no = rand_num();
-            //printf("rand_no: %5.5f\nIo: %5.5f\nIo*rand_no: %5.5f\nIith: %5.5f\n",rand_no,Io,rand_no*Io, Iith);
-        } while (rand_no*Io <= Iith);
-
+            //printf("Rand_no: %5.5f\nIo: %5.5f\nIith: %5.5f\n",rand_no,Io, Iith);
+        } while ((rand_no*Io) >= Iith);
+		//printf("Rejection Iterations: %d\n",i);
 		alpha = theta;
 		beta = phi;
 		return;
 	}
+
 
 	void rotate_about_vector(Vector& trajectory, Vector& axis, double angle) {
 		int columns = 3;
@@ -277,36 +274,7 @@ public:
      */
     void scatter(void) {
 
-        /* Step 1: Update directional cosine for alpha and beta */
-
-        double cos_alpha = cos(alpha);
-        double sin_alpha = sin(alpha);
-        double cos_beta = cos(beta);
-        double sin_beta = sin(beta); 
-        double old_ui = U.i;
-        double old_uj = U.j;
-        double old_uk = U.k;
-
-        // Shortcut for when we are just about perpendicular to z axis
-        if (1 - U.k <= 1e-12) {
-            U.i = sin_alpha*cos_beta;
-            U.j = sin_alpha*sin_beta;
-            if (U.k > 0) {
-                U.k = cos_alpha;
-            } else {
-                U.k = -cos_alpha;
-            }
-        }
-        else {
-            // Placeholders for the calculation
-            double sin_z = sqrt(1-(U.k)*(U.k));
-
-            U.i = sin_alpha*(old_ui*old_uk*cos_beta - old_uj*sin_beta) / (sin_z + old_ui*cos_alpha);
-            U.j = sin_alpha*(old_uj*old_uk*cos_beta + old_ui*sin_beta) / (sin_z + old_uj*cos_alpha);
-            U.k = -sin_alpha*cos_beta*sin_z + old_uk*cos_alpha;
-        }
-
-        /* Step 2: Rotate Stokes vector by beta */
+        /* Step 1: Rotate Stokes vector by beta */
         // Placeholders for step 4
         double si = S.I;
         double sq = S.Q;
@@ -314,7 +282,7 @@ public:
         double sv = S.V;
         S.rotate_stokes(beta);
 
-        /* Step 3: Multiply Stokes by scattering matrix */
+        /* Step 2: Multiply Stokes by scattering matrix */
 
         int ithedeg = floor(alpha*nangles/M_PI);
 
@@ -326,9 +294,40 @@ public:
 			
 		S.V= -s43[ithedeg]*su+s33[ithedeg]*sv;
 	    	
-        /* Step 4: Rotate Stokes again to get back into reference frame */
-        /* TODO: Figure out why this is a necessary step. */
 
+        /* Step 3: Update directional cosine for alpha and beta */
+
+        double cos_alpha = cos(alpha);
+        double sin_alpha = sin(alpha);
+        double cos_beta = cos(beta);
+        double sin_beta = sin(beta); 
+        double old_ui = U.i;
+        double old_uj = U.j;
+        double old_uk = U.k;
+
+        // Shortcut for when we are just about perpendicular to z axis
+        if (1 - U.k <= 1e-6) {
+            U.i = sin_alpha*cos_beta;
+            U.j = sin_alpha*sin_beta*cos_beta*2;
+            if (U.k > 0) {
+                U.k = cos_alpha;
+            } else {
+                U.k = -cos_alpha;
+            }
+        }
+        else {
+            // Placeholders for the calculation
+            double sin_z = sqrt(1-(U.k)*(U.k));
+
+            U.i = sin_alpha*(old_ui*old_uj*cos_beta - old_uj*sin_beta) / sin_z + old_ui*cos_alpha;
+            //U.j = sin_alpha*(old_uj*old_uk*cos_beta + old_ui*sin_beta) / (sin_z + old_uj*cos_alpha);
+            //U.k = -sin_alpha*cos_beta*sin_z + old_uk*cos_alpha;
+            U.j = sin_alpha*(old_ui*old_uk*cos_beta - old_ui*sin_beta) / sin_z + old_uj*cos_alpha;
+            U.k = sin_alpha*cos_beta*sin_z*(old_uj*old_uk*cos_beta - old_ui*sin_beta) + old_uk*cos_alpha;
+        }
+
+
+        /* Step 4: Rotate Stokes again to get back into reference frame */
         double denominator = sqrt(1-cos_alpha*cos_alpha)*sqrt(1-U.k*U.k);
         double cosi;
         if (denominator <= 1e-12) { S.rotate_stokes(3*M_PI/2); }
@@ -340,9 +339,16 @@ public:
             }
             if (cosi > 1) { S.rotate_stokes(2*M_PI); }
             else if (cosi < -1) { S.rotate_stokes(M_PI);}
-            else { S.rotate_stokes(2*M_PI - acos(cosi)); }
+            else {
+				//S.rotate_stokes(2*M_PI - acos(cosi)); 
+				double cos2b = 2*cosi*cosi -1;
+				double sin2b = sqrt(1-cos2b*cos2b);
+				sq = S.Q;
+				su = S.U;
+				S.Q = (cos2b*sq - su*sin2b);
+				S.U = (sin2b*sq + su*cos2b);
+			}
         }
-        // Rotate stokes vector clockwise by i
         S.normalize();
     }
 };
