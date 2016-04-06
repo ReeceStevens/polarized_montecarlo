@@ -36,7 +36,24 @@ public:
      * Return the dot product of vectors
      * a and b.
      */
-    double dot_prod(Vector& a, Vector& b) {
+    static double dot_prod(Vector& a, Vector& b) {
         return a.i*b.i + a.j*b.j + a.k*b.k;
     };
+
+    static Vector scalar_mult(double x, Vector &a) { 
+		Vector result(a.i*x, a.j*x, a.k*x);
+		return result;
+	}
+
+	// Three-element sum
+	static Vector sum(Vector& a, Vector& b, Vector & c) {
+		Vector result(a.i+b.i+c.i, a.j+b.j+c.j, a.k+b.k+c.k);
+		return result;
+	}
+
+	void operator=(Vector& a) {
+		i = a.i;
+		j = a.j;
+		k = a.k;
+	}
 };

@@ -133,12 +133,12 @@ slabdepth = 4/mu_s;
 albedo = mu_s / (mu_s + mu_a);
 double g = GQSC / QSCA;
 printf("\n\n\n***Starting Simulation***\n");
+//mu_s *= (1-g); // Compensating for backscattering
 printf("Mie properties: \ndiameter=%5.5f\nmu_s=%5.5f\nrho=%5.5f\nslabdepth=%5.5f\nasymmetry factor=%5.5f\n", radius*2, mu_s, rho, slabdepth, g);
 
-mu_s *= (1-g); // Compensating for backscattering
 
 int grid_res = 100;
-const double hw = 7/mu_s;
+const double hw = 7/(mu_s);
 
 // Allocate map space
 // Profile 1
@@ -185,11 +185,12 @@ for (int i = 0; i < nangles; i ++) {
     printf("Beginning simulation... \n");
     fflush(stdout);
     // Begin simulation (only doing one orientation for testing purposes)
-	for (int j = 0; j < 4; j ++) {
+	for (int j = 0; j < 1; j ++) {
 	int num_ref = 0;
     for (int i = 0; i < nphotons; i ++ ) {
-        //printf("Launching photon %d\n", i);
-        photon a;
+		if (i%100000 == 0) { printf("%d percent complete!\n",(i/10000)); }
+		fflush(stdout);
+        photon a = photon();
 		switch(j) {
 			case 0:
 				a.setStokes(1,1,0,0);
@@ -206,16 +207,19 @@ for (int i = 0; i < nangles; i ++) {
 		}
 		int k = 0;
         while (a.alive()) {
+			//printf("x: %5.5f, y: %5.5f, z: %5.5f\n", a.x, a.y, a.z);
+			//printf("Ux: %5.5f,Uy: %5.5f, Uz: %5.5f\n", a.U.i, a.U.j, a.U.k);
             a.move();
             a.drop();
             if (!a.alive()) { 
                 break;
             }
             a.rejection();
-            a.scatter();
+            a.quaternion_scatter();
+            //a.scatter();
             k ++;
-			//printf("Step %d\n",k);
         }
+        //printf("Photon %d lasted %d cycles\n", i, k);
 		// Move all positions to positive values
 		if (a.z < 0) {		
 		num_ref ++;
@@ -259,6 +263,8 @@ for (int i = 0; i < nangles; i ++) {
     printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R/(nphotons),Q_R/(nphotons),U_R/(nphotons),V_R/(nphotons));	
     printf("T= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_T/(nphotons),Q_T/(nphotons),U_T/(nphotons),V_T/(nphotons));	
 	printf("Number of reflected photons: %d\n", num_ref);
+
+
 	I_R = 0;
 	Q_R = 0;
 	U_R = 0;
@@ -311,7 +317,7 @@ for (int i = 0; i < nangles; i ++) {
 	}
 	fprintf(op_matrix,"];\n");
 	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimshow(I_R_1);\ntitle('I_1'); \nsubplot(2,2,2);\nimshow(Q_R_1);\ntitle('Q_1'); \nsubplot(2,2,3);\nimshow(U_R_1);\ntitle('U_1'); \nsubplot(2,2,4);\nimshow(V_R_1);\ntitle('V_1'); \n");
+	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_1);\ntitle('I_1'); \nsubplot(2,2,2);\nimagesc(Q_R_1);\ntitle('Q_1'); \nsubplot(2,2,3);\nimagesc(U_R_1);\ntitle('U_1'); \nsubplot(2,2,4);\nimagesc(V_R_1);\ntitle('V_1'); \n");
 
 	// Output Profile 2
 
@@ -351,7 +357,7 @@ for (int i = 0; i < nangles; i ++) {
 	}
 	fprintf(op_matrix,"];\n");
 	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimshow(I_R_2);\ntitle('I_2'); \nsubplot(2,2,2);\nimshow(Q_R_2);\ntitle('Q_2'); \nsubplot(2,2,3);\nimshow(U_R_2);\ntitle('U_2'); \nsubplot(2,2,4);\nimshow(V_R_2);\ntitle('V_2'); \n");
+	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_2);\ntitle('I_2'); \nsubplot(2,2,2);\nimagesc(Q_R_2);\ntitle('Q_2'); \nsubplot(2,2,3);\nimagesc(U_R_2);\ntitle('U_2'); \nsubplot(2,2,4);\nimagesc(V_R_2);\ntitle('V_2'); \n");
 
 	// Output Profile 3
 	
@@ -391,7 +397,7 @@ for (int i = 0; i < nangles; i ++) {
 	}
 	fprintf(op_matrix,"];\n");
 	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimshow(I_R_3);\ntitle('I_3'); \nsubplot(2,2,2);\nimshow(Q_R_3);\ntitle('Q_3'); \nsubplot(2,2,3);\nimshow(U_R_3);\ntitle('U_3'); \nsubplot(2,2,4);\nimshow(V_R_3);\ntitle('V_3'); \n");
+	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_3);\ntitle('I_3'); \nsubplot(2,2,2);\nimagesc(Q_R_3);\ntitle('Q_3'); \nsubplot(2,2,3);\nimagesc(U_R_3);\ntitle('U_3'); \nsubplot(2,2,4);\nimagesc(V_R_3);\ntitle('V_3'); \n");
 
 	// Output Profile 4
 
@@ -431,7 +437,7 @@ for (int i = 0; i < nangles; i ++) {
 	}
 	fprintf(op_matrix,"];\n");
 	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimshow(I_R_4);\ntitle('I_4'); \nsubplot(2,2,2);\nimshow(Q_R_4);\ntitle('Q_4'); \nsubplot(2,2,3);\nimshow(U_R_4);\ntitle('U_4'); \nsubplot(2,2,4);\nimshow(V_R_4);\ntitle('V_4'); \n");
+	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_4);\ntitle('I_4'); \nsubplot(2,2,2);\nimagesc(Q_R_4);\ntitle('Q_4'); \nsubplot(2,2,3);\nimagesc(U_R_4);\ntitle('U_4'); \nsubplot(2,2,4);\nimagesc(V_R_4);\ntitle('V_4'); \n");
 
 	fclose(op_matrix);
 
