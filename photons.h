@@ -63,15 +63,18 @@ public:
 		this->U = that.U;
 		this->V = that.V;
 	}
-    void scalar_mult(double x) { I = x*I; Q = x*Q; U = x*U; V = x*V;}
-	void rotate_stokes(double phi) {
-		double cos_2phi = cos(2*phi);
-		double sin_2phi = sin(2*phi);
+
+    void scalar_mult(double x) { I = x*I; Q = x*Q; U = x*U; V = x*V;}    
+
+	void rotate_stokes(double phi) {                                     
+		double cos_2phi = cos(2*phi);                                    
+		double sin_2phi = sin(2*phi);                                	
 		double old_q = this->Q;
 		double old_u = this->U;
 		this->Q = old_q*cos_2phi + old_u*sin_2phi;
 		this->U = -old_q*sin_2phi + old_u*cos_2phi;
 	}
+
     void normalize() {
         if (I <= 1e-6) {printf("Small intensity problem!\n"); return; }
         Q = Q/I;
@@ -128,51 +131,6 @@ public:
 
 	}
 
-	/*Vector vector_prod(Vector &a) {
-		Vector b = Vector::scalar_mult((2*q0),gam);
-		Vector t1 = Vector::scalar_mult((q0*q0 - Vector::dot_prod(a,a)), gam);
-		Vector gam2 = Vector::scalar_mult(2,gam);
-		Vector t2 = Vector::scalar_mult(Vector::dot_prod(gam,a),gam2);
-		Vector t3 = Vector::cross_prod(b,a);
-		Vector res = Vector::sum(t1,t2,t3);	
-		return res;
-	}*/
-
-	/*
-	Vector vector_prod(Vector &a) {
-		double x; 
-		double y;
-		double z;
-		double alpha = q0*q0 - gam.i*gam.i - gam.j*gam.j - gam.k*gam.k;
-		double beta = 2*(gam.i*a.i + gam.j*a.j + gam.k*a.k);
-		x = 2*q0*(gam.j*a.k + gam.k*a.j) + alpha*a.i + beta*gam.i;
-		y = 2*q0*(gam.i*a.k + gam.k*a.i) + alpha*a.j + beta*gam.j;
-		z = 2*q0*(gam.i*a.j + gam.j*a.i) + alpha*a.k + beta*gam.k;
-		Vector ret = Vector(x,y,z);
-		// Normalize
-		double temp  = 1/sqrt(x*x+y*y+z*z);
-		x = x*temp;	
-		y = y*temp;
-		z = z*temp;
-		return ret;
-	}*/
-
-	/*Vector vector_prod(Vector &a) {
-		double x;
-		double y; 
-		double z;
-		double temp;
-		x = -q0*(-a.i*q0-a.j*gam.i -a.k*gam.j) -gam.i*(a.i*gam.i -a.j*q0 + a.k*gam.k) +gam.j*(-a.i*gam.j + a.j*gam.k + a.k*q0) + gam.k*(a.i*gam.k + a.j*gam.j -a.k*gam.i);
-		y = +q0*(a.i*gam.i -a.j*q0 + a.k*gam.k) -gam.i*(-a.i*q0-a.j*gam.i -a.k*gam.j) -gam.j*(a.i*gam.k + a.j*gam.j -a.k*gam.i)+ gam.k*(-a.i*gam.j + a.j*gam.k + a.k*q0);
-		z = -q0*(-a.i*gam.j + a.j*gam.k + a.k*q0)+gam.i*(a.i*gam.k + a.j*gam.j -a.k*gam.i) -gam.j*(-a.i*q0-a.j*gam.i -a.k*gam.j) + gam.k*(a.i*gam.i -a.j*q0 + a.k*gam.k);
-
-		temp  = 1/sqrt(x*x+y*y+z*z);
-		x = x*temp;	
-		y = y*temp;
-		z = z*temp;
-		Vector ret = Vector(x,y,z);
-		return ret;
-	}*/
 };
 
 struct photon {
@@ -323,9 +281,9 @@ public:
 			//Vector newV = rot_U_e.vector_prod(V);
 			//V = newV;
 			S.rotate_stokes(epsilon);
-			}
 			double phi = atan2(U.j, U.i);
 			S.rotate_stokes(phi);
+			}
 			//Vector unit_z(0,0,1);
 			//quaternion rot_Z_p(phi, unit_z);
 			//Vector new_V = rot_Z_p.vector_prod(V);
@@ -351,9 +309,9 @@ public:
 			//Vector newV = rot_U_e.vector_prod(V);
 			//V = newV;
 			S.rotate_stokes(epsilon);
-			}
 			double phi = -1*atan2(U.j, U.i);
 			S.rotate_stokes(phi);
+			}
 			//Vector unit_z(0,0,1);
 			//quaternion rot_Z_p(phi, unit_z);
 			//Vector new_V = rot_Z_p.vector_prod(V);
@@ -395,25 +353,6 @@ public:
 		return;
 	}
 
-/*
-	rotSphi(S, phi, S2);
-
-	S[0]= s11[ithedeg]*S2[0]+s12[ithedeg]*S2[1];
-				
-	S[1]= s12[ithedeg]*S2[0]+s11[ithedeg]*S2[1];
-	
-	S[2]= s33[ithedeg]*S2[2]+s43[ithedeg]*S2[3];
-				
-	S[3]= -s43[ithedeg]*S2[2]+s33[ithedeg]*S2[3];
-
-	S[1]= S[1]/S[0];	
-	S[2]= S[2]/S[0];
-	S[3]= S[3]/S[0];
-	S[0]= 1.0;
-*/
-
-
-
 	void quaternion_scatter(void) {
 		/* Step 1: Rotate V about U by beta */
 		quaternion rot_U_b(beta, U);
@@ -434,7 +373,7 @@ public:
         double sv = S.V;
 
         /* Step 4: Multiply Stokes by scattering matrix */
-        int ithedeg = floor(alpha*nangles/M_PI);
+        int ithedeg = floor(alpha/M_PI*nangles);
 		S.I= s11[ithedeg]*si+s12[ithedeg]*sq;
 		S.Q= s12[ithedeg]*si+s11[ithedeg]*sq;
 		S.U= s33[ithedeg]*su+s43[ithedeg]*sv;

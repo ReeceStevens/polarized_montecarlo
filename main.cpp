@@ -13,22 +13,22 @@ double nphotons = 1e6;
 /* Create Global Variables */
 // Stokes vector collector for reflected photons
 double I_R = 0;
-double Q_R = 0;	
-double U_R = 0;	
-double V_R = 0;	
+double Q_R = 0;
+double U_R = 0;
+double V_R = 0;
 
 // Stokes vector collector for transmitted photons
-double I_T = 0;	
-double Q_T = 0;	
-double U_T = 0;	
-double V_T = 0;	
+double I_T = 0;
+double Q_T = 0;
+double U_T = 0;
+double V_T = 0;
 
 /* Mie Setup */
 
 struct fortran_complex{ float r,i; };
 double complx_abs(fortran_complex a) {
     double abs = sqrt(a.r*a.r + a.i*a.i);
-    return abs;  
+    return abs;
 }
 fortran_complex complx_mult(fortran_complex a, fortran_complex b) {
     fortran_complex product;
@@ -43,8 +43,10 @@ fortran_complex complx_conj(fortran_complex a) {
     return result;
 }
 
-double radius = (2.0/2); // Radius of spherical scatterer 
-double wavelength = 0.6328; // wavelength of incident beam 
+//double radius = (2.0/2); // Radius of spherical scatterer 
+double radius = (2.02/2); // Radius of spherical scatterer 
+//double wavelength = 0.6328; // wavelength of incident beam 
+double wavelength = 0.543; // wavelength of incident beam 
 double rho = 1.152e-4; // Density of spherical scatterers in medium
 int nangles = 1000;
 double mu_a = 0.0;
@@ -142,35 +144,200 @@ const double hw = 7/(mu_s);
 
 // Allocate map space
 // Profile 1
-double** I_Ref = new double*[grid_res];
+double** I_Ref_H = new double*[grid_res];
 for (int i = 0; i < grid_res; i ++ ) {
-	I_Ref[i] = new double[grid_res];
+	I_Ref_H[i] = new double[grid_res];
 	for (int j = 0; j < grid_res; j++){
-		I_Ref[i][j] = 0;
+		I_Ref_H[i][j] = 0;
 	}
 }
 
-double** Q_Ref = new double*[grid_res];
+double** Q_Ref_H = new double*[grid_res];
 for (int i = 0; i < grid_res; i ++ ) {
-	Q_Ref[i] = new double[grid_res];
+	Q_Ref_H[i] = new double[grid_res];
 	for (int j = 0; j < grid_res; j++){
-		Q_Ref[i][j] = 0;
+		Q_Ref_H[i][j] = 0;
 	}
 }
 
-double** U_Ref = new double*[grid_res];
+double** U_Ref_H = new double*[grid_res];
 for (int i = 0; i < grid_res; i ++ ) {
-	U_Ref[i] = new double[grid_res];
+	U_Ref_H[i] = new double[grid_res];
 	for (int j = 0; j < grid_res; j++){
-		U_Ref[i][j] = 0;
+		U_Ref_H[i][j] = 0;
 	}
 }
 
-double** V_Ref = new double*[grid_res];
+double** V_Ref_H = new double*[grid_res];
 for (int i = 0; i < grid_res; i ++ ) {
-	V_Ref[i] = new double[grid_res];
+	V_Ref_H[i] = new double[grid_res];
 	for (int j = 0; j < grid_res; j++){
-		V_Ref[i][j] = 0;
+		V_Ref_H[i][j] = 0;
+	}
+}
+
+// Profile 2
+double** I_Ref_V = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	I_Ref_V[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		I_Ref_V[i][j] = 0;
+	}
+}
+
+double** Q_Ref_V = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	Q_Ref_V[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		Q_Ref_V[i][j] = 0;
+	}
+}
+
+double** U_Ref_V = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	U_Ref_V[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		U_Ref_V[i][j] = 0;
+	}
+}
+
+double** V_Ref_V = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	V_Ref_V[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		V_Ref_V[i][j] = 0;
+	}
+}
+
+// Profile 3
+double** I_Ref_M = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	I_Ref_M[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		I_Ref_M[i][j] = 0;
+	}
+}
+
+double** Q_Ref_M = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	Q_Ref_M[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		Q_Ref_M[i][j] = 0;
+	}
+}
+
+double** U_Ref_M = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	U_Ref_M[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		U_Ref_M[i][j] = 0;
+	}
+}
+
+double** V_Ref_M = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	V_Ref_M[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		V_Ref_M[i][j] = 0;
+	}
+}
+
+// Profile 4
+double** I_Ref_P = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	I_Ref_P[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		I_Ref_P[i][j] = 0;
+	}
+}
+
+double** Q_Ref_P = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	Q_Ref_P[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		Q_Ref_P[i][j] = 0;
+	}
+}
+
+double** U_Ref_P = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	U_Ref_P[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		U_Ref_P[i][j] = 0;
+	}
+}
+
+double** V_Ref_P = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	V_Ref_P[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		V_Ref_P[i][j] = 0;
+	}
+}
+
+// Profile 5
+double** I_Ref_R = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	I_Ref_R[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		I_Ref_R[i][j] = 0;
+	}
+}
+
+double** Q_Ref_R = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	Q_Ref_R[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		Q_Ref_R[i][j] = 0;
+	}
+}
+
+double** U_Ref_R = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	U_Ref_R[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		U_Ref_R[i][j] = 0;
+	}
+}
+
+double** V_Ref_R = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	V_Ref_R[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		V_Ref_R[i][j] = 0;
+	}
+}
+
+// Profile 6
+double** I_Ref_L = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	I_Ref_L[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		I_Ref_L[i][j] = 0;
+	}
+}
+
+double** Q_Ref_L = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	Q_Ref_L[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		Q_Ref_L[i][j] = 0;
+	}
+}
+
+double** U_Ref_L = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	U_Ref_L[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		U_Ref_L[i][j] = 0;
+	}
+}
+
+double** V_Ref_L = new double*[grid_res];
+for (int i = 0; i < grid_res; i ++ ) {
+	V_Ref_L[i] = new double[grid_res];
+	for (int j = 0; j < grid_res; j++){
+		V_Ref_L[i][j] = 0;
 	}
 }
 
@@ -182,13 +349,14 @@ for (int i = 0; i < nangles; i ++) {
     s33[i] = intermediate.r;
     s43[i] = intermediate.i;
 }
-    printf("Beginning simulation... \n");
-    fflush(stdout);
-    // Begin simulation (only doing one orientation for testing purposes)
-	for (int j = 0; j < 1; j ++) {
+
+printf("Beginning simulation... \n");
+fflush(stdout);
+// Begin simulation (only doing one orientation for testing purposes)
+for (int j = 0; j < 6; j ++) {
 	int num_ref = 0;
     for (int i = 0; i < nphotons; i ++ ) {
-		if (i%100000 == 0) { printf("%d percent complete!\n",(i/10000)); }
+		if (i%100000 == 0) { printf("\r%d percent complete!",(i/10000)); }
 		fflush(stdout);
         photon a = photon();
 		switch(j) {
@@ -202,7 +370,13 @@ for (int i = 0; i < nangles; i ++) {
 				a.setStokes(1,0,1,0);
 				break;
 			case 3: 
+				a.setStokes(1,0,-1,0);
+				break;
+			case 4:
 				a.setStokes(1,0,0,1);
+				break;
+			case 5:
+				a.setStokes(1,0,0,-1);
 				break;
 		}
 		int k = 0;
@@ -253,13 +427,48 @@ for (int i = 0; i < nangles; i ++) {
 			dist *= grid_res;
 			idx_y = (int) dist;
 		}
-		I_Ref[idx_x][idx_y] = a.S.I;
-		Q_Ref[idx_x][idx_y] = a.S.Q;
-		U_Ref[idx_x][idx_y] = a.S.U;
-		V_Ref[idx_x][idx_y] = a.S.V;
+		//a.S.normalize();
+		switch(j) {
+			case 0:
+				I_Ref_H[idx_x][idx_y] += a.S.I;
+				Q_Ref_H[idx_x][idx_y] += a.S.Q;
+				U_Ref_H[idx_x][idx_y] += a.S.U;
+				V_Ref_H[idx_x][idx_y] += a.S.V;
+				break;
+			case 1:
+				I_Ref_V[idx_x][idx_y] += a.S.I;
+				Q_Ref_V[idx_x][idx_y] += a.S.Q;
+				U_Ref_V[idx_x][idx_y] += a.S.U;
+				V_Ref_V[idx_x][idx_y] += a.S.V;
+				break;
+			case 2:
+				I_Ref_P[idx_x][idx_y] += a.S.I;
+				Q_Ref_P[idx_x][idx_y] += a.S.Q;
+				U_Ref_P[idx_x][idx_y] += a.S.U;
+				V_Ref_P[idx_x][idx_y] += a.S.V;
+				break;
+			case 3:
+				I_Ref_M[idx_x][idx_y] += a.S.I;
+				Q_Ref_M[idx_x][idx_y] += a.S.Q;
+				U_Ref_M[idx_x][idx_y] += a.S.U;
+				V_Ref_M[idx_x][idx_y] += a.S.V;
+				break;
+			case 4:
+				I_Ref_R[idx_x][idx_y] += a.S.I;
+				Q_Ref_R[idx_x][idx_y] += a.S.Q;
+				U_Ref_R[idx_x][idx_y] += a.S.U;
+				V_Ref_R[idx_x][idx_y] += a.S.V;
+				break;
+			case 5:
+				I_Ref_L[idx_x][idx_y] += a.S.I;
+				Q_Ref_L[idx_x][idx_y] += a.S.Q;
+				U_Ref_L[idx_x][idx_y] += a.S.U;
+				V_Ref_L[idx_x][idx_y] += a.S.V;
+				break;
+		}
 		}
     }
-	printf("Round %d:\n", j);
+	printf("\nRound %d:\n", j);
     printf("R= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_R/(nphotons),Q_R/(nphotons),U_R/(nphotons),V_R/(nphotons));	
     printf("T= %5.5f\t %5.5f\t %5.5f\t %5.5f\n ",I_T/(nphotons),Q_T/(nphotons),U_T/(nphotons),V_T/(nphotons));	
 	printf("Number of reflected photons: %d\n", num_ref);
@@ -284,7 +493,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "I_R_1 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", I_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", I_Ref_H[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -293,7 +502,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "Q_R_1 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", Q_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", Q_Ref_H[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -302,7 +511,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "U_R_1 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", U_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", U_Ref_H[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -311,20 +520,20 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "V_R_1 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", V_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", V_Ref_H[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
 	fprintf(op_matrix,"];\n");
 	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_1);\ntitle('I_1'); \nsubplot(2,2,2);\nimagesc(Q_R_1);\ntitle('Q_1'); \nsubplot(2,2,3);\nimagesc(U_R_1);\ntitle('U_1'); \nsubplot(2,2,4);\nimagesc(V_R_1);\ntitle('V_1'); \n");
+	//fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_1);\ntitle('I_1'); \nsubplot(2,2,2);\nimagesc(Q_R_1);\ntitle('Q_1'); \nsubplot(2,2,3);\nimagesc(U_R_1);\ntitle('U_1'); \nsubplot(2,2,4);\nimagesc(V_R_1);\ntitle('V_1'); \n");
 
 	// Output Profile 2
 
 	fprintf(op_matrix, "I_R_2 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", I_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", I_Ref_V[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -333,7 +542,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "Q_R_2 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", Q_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", Q_Ref_V[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -342,7 +551,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "U_R_2 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", U_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", U_Ref_V[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -351,20 +560,18 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "V_R_2 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", V_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", V_Ref_V[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
 	fprintf(op_matrix,"];\n");
 	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_2);\ntitle('I_2'); \nsubplot(2,2,2);\nimagesc(Q_R_2);\ntitle('Q_2'); \nsubplot(2,2,3);\nimagesc(U_R_2);\ntitle('U_2'); \nsubplot(2,2,4);\nimagesc(V_R_2);\ntitle('V_2'); \n");
+	//fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_2);\ntitle('I_2'); \nsubplot(2,2,2);\nimagesc(Q_R_2);\ntitle('Q_2'); \nsubplot(2,2,3);\nimagesc(U_R_2);\ntitle('U_2'); \nsubplot(2,2,4);\nimagesc(V_R_2);\ntitle('V_2'); \n");
 
-	// Output Profile 3
-	
 	fprintf(op_matrix, "I_R_3 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", I_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", I_Ref_M[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -373,7 +580,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "Q_R_3 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", Q_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", Q_Ref_M[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -382,7 +589,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "U_R_3 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", U_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", U_Ref_M[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -391,20 +598,18 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "V_R_3 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", V_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", V_Ref_M[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
 	fprintf(op_matrix,"];\n");
-	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_3);\ntitle('I_3'); \nsubplot(2,2,2);\nimagesc(Q_R_3);\ntitle('Q_3'); \nsubplot(2,2,3);\nimagesc(U_R_3);\ntitle('U_3'); \nsubplot(2,2,4);\nimagesc(V_R_3);\ntitle('V_3'); \n");
 
-	// Output Profile 4
-
+	// Output Profile 3
+	
 	fprintf(op_matrix, "I_R_4 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", I_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", I_Ref_P[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -413,7 +618,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "Q_R_4 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", Q_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", Q_Ref_P[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -422,7 +627,7 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "U_R_4 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", U_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", U_Ref_P[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
@@ -431,13 +636,88 @@ for (int i = 0; i < nangles; i ++) {
 	fprintf(op_matrix, "V_R_4 = [");
 	for (int i = 0; i < grid_res; i ++) {
 		for (int j = 0; j < grid_res; j ++) {
-			fprintf(op_matrix, "%f ", V_Ref[i][j]);	
+			fprintf(op_matrix, "%f ", V_Ref_P[i][j]);	
 		}
 		fprintf(op_matrix,";\n");
 	}
 	fprintf(op_matrix,"];\n");
 	// Add MATLAB processing script for easy visualization
-	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_4);\ntitle('I_4'); \nsubplot(2,2,2);\nimagesc(Q_R_4);\ntitle('Q_4'); \nsubplot(2,2,3);\nimagesc(U_R_4);\ntitle('U_4'); \nsubplot(2,2,4);\nimagesc(V_R_4);\ntitle('V_4'); \n");
+	//fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_3);\ntitle('I_3'); \nsubplot(2,2,2);\nimagesc(Q_R_3);\ntitle('Q_3'); \nsubplot(2,2,3);\nimagesc(U_R_3);\ntitle('U_3'); \nsubplot(2,2,4);\nimagesc(V_R_3);\ntitle('V_3'); \n");
+
+	// Output Profile 5
+	fprintf(op_matrix, "I_R_5 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", I_Ref_R[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
+
+	fprintf(op_matrix, "Q_R_5 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", Q_Ref_R[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
+
+	fprintf(op_matrix, "U_R_5 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", U_Ref_R[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
+
+	fprintf(op_matrix, "V_R_5 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", V_Ref_R[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
+	// Add MATLAB processing script for easy visualization
+//	fprintf(op_matrix, "figure();\nsubplot(2,2,1);\nimagesc(I_R_4);\ntitle('I_4'); \nsubplot(2,2,2);\nimagesc(Q_R_4);\ntitle('Q_4'); \nsubplot(2,2,3);\nimagesc(U_R_4);\ntitle('U_4'); \nsubplot(2,2,4);\nimagesc(V_R_4);\ntitle('V_4'); \n");
+
+	fprintf(op_matrix, "I_R_6 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", I_Ref_L[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
+
+	fprintf(op_matrix, "Q_R_6 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", Q_Ref_L[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
+
+	fprintf(op_matrix, "U_R_6 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", U_Ref_L[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
+
+	fprintf(op_matrix, "V_R_6 = [");
+	for (int i = 0; i < grid_res; i ++) {
+		for (int j = 0; j < grid_res; j ++) {
+			fprintf(op_matrix, "%f ", V_Ref_L[i][j]);	
+		}
+		fprintf(op_matrix,";\n");
+	}
+	fprintf(op_matrix,"];\n");
 
 	fclose(op_matrix);
 
