@@ -25,7 +25,7 @@ public:
      */
     static Vector cross_prod(Vector& a, Vector& b) {
         double new_i = a.j * b.k - a.k * b.j;
-        double new_j = a.i * b.k - a.k * b.i;
+        double new_j = -(a.i * b.k - a.k * b.i);
         double new_k = a.i * b.j - a.j * b.i;
         Vector result(new_i, new_j, new_k);   
         return result;

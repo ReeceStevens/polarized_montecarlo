@@ -11,7 +11,7 @@
 // These variables are coming from main 
 extern double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
 extern double mu_a, mu_s, slabdepth, albedo, g;
-extern int nphotons, nangles;
+extern int nphotons, nangles, grid_res;
 extern double *s11, *s12, *s33, *s43;
 extern double **I_Ref_H, **I_Ref_V, **I_Ref_P, **I_Ref_M, **I_Ref_R, **I_Ref_L;
 extern double **Q_Ref_H, **Q_Ref_V, **Q_Ref_P, **Q_Ref_M, **Q_Ref_R, **Q_Ref_L;
@@ -46,32 +46,32 @@ extern "C" void MIEV0(float* XX, fortran_complex* CREFIN, int* PERFCT, float* MI
 
 int config(void) {
 
- nphotons = 1e6;
-/* Create Global Variables */
-// Stokes vector collector for reflected photons
- I_R = 0;
- Q_R = 0;
- U_R = 0;
- V_R = 0;
+	nphotons = 1e6;
+	/* Create Global Variables */
+	// Stokes vector collector for reflected photons
+	I_R = 0;
+	Q_R = 0;
+	U_R = 0;
+	V_R = 0;
 
-// Stokes vector collector for transmitted photons
- I_T = 0;
- Q_T = 0;
- U_T = 0;
- V_T = 0;
+	// Stokes vector collector for transmitted photons
+	I_T = 0;
+	Q_T = 0;
+	U_T = 0;
+	V_T = 0;
 
-//double radius = (2.0/2); // Radius of spherical scatterer 
-double radius = (2.02/2); // Radius of spherical scatterer 
-//double wavelength = 0.6328; // wavelength of incident beam 
-double wavelength = 0.543; // wavelength of incident beam 
-double rho = 1.152e-4; // Density of spherical scatterers in medium
-nangles = 1000;
-mu_a = 0.0;
+	//double radius = (2.0/2); // Radius of spherical scatterer 
+	double radius = (2.02/2); // Radius of spherical scatterer 
+	//double wavelength = 0.6328; // wavelength of incident beam 
+	double wavelength = 0.543; // wavelength of incident beam 
+	double rho = 1.152e-4; // Density of spherical scatterers in medium
+	nangles = 1000;
+	mu_a = 0.0;
 
-s11 = new double[nangles];
-s12 = new double[nangles];
-s33 = new double[nangles];
-s43 = new double[nangles];
+	s11 = new double[nangles];
+	s12 = new double[nangles];
+	s33 = new double[nangles];
+	s43 = new double[nangles];
 
 
 	// Mie scattering variables. Passed into Wiscombe's mie scattering subroutine.
@@ -126,7 +126,6 @@ s43 = new double[nangles];
 	float SPIKE;
 	float* PMOM = new float[4*4] ; // not used.
 
-
 	// Call Wiscombe's mie function to calculate S1 and S2.
 	MIEV0(&XX, &CREFIN, &PERFCT, &MIMCUT, &ANYANG, &NUMANG, XMU, &NMOM, &IPOLZN, &MOMDIM, PRNT, 
 	  &QEXT, &QSCA, &GQSC, PMOM, &SFORW, &SBACK,  S1, S2, TFORW, TBACK, &SPIKE);
@@ -136,221 +135,223 @@ s43 = new double[nangles];
 	slabdepth = 4/mu_s;
 	albedo = mu_s / (mu_s + mu_a);
 	g = GQSC / QSCA;
-	int grid_res = 100;	
-// Allocate map space
-// Profile 1
-I_Ref_H = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	I_Ref_H[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		I_Ref_H[i][j] = 0;
+	grid_res = 100;	
+
+	// Allocate map space
+	// Profile 1
+	I_Ref_H = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		I_Ref_H[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			I_Ref_H[i][j] = 0;
+		}
 	}
-}
 
-Q_Ref_H = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	Q_Ref_H[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		Q_Ref_H[i][j] = 0;
+	Q_Ref_H = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		Q_Ref_H[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			Q_Ref_H[i][j] = 0;
+		}
 	}
-}
 
-U_Ref_H = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	U_Ref_H[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		U_Ref_H[i][j] = 0;
+	U_Ref_H = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		U_Ref_H[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			U_Ref_H[i][j] = 0;
+		}
 	}
-}
 
-V_Ref_H = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	V_Ref_H[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		V_Ref_H[i][j] = 0;
+	V_Ref_H = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		V_Ref_H[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			V_Ref_H[i][j] = 0;
+		}
 	}
-}
 
-// Profile 2
-I_Ref_V = new double* [grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	I_Ref_V[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		I_Ref_V[i][j] = 0;
+	// Profile 2
+	I_Ref_V = new double* [grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		I_Ref_V[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			I_Ref_V[i][j] = 0;
+		}
 	}
-}
 
-Q_Ref_V = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	Q_Ref_V[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		Q_Ref_V[i][j] = 0;
+	Q_Ref_V = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		Q_Ref_V[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			Q_Ref_V[i][j] = 0;
+		}
 	}
-}
 
-U_Ref_V = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	U_Ref_V[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		U_Ref_V[i][j] = 0;
+	U_Ref_V = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		U_Ref_V[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			U_Ref_V[i][j] = 0;
+		}
 	}
-}
 
-V_Ref_V = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	V_Ref_V[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		V_Ref_V[i][j] = 0;
+	V_Ref_V = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		V_Ref_V[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			V_Ref_V[i][j] = 0;
+		}
 	}
-}
 
-// Profile 3
-I_Ref_M = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	I_Ref_M[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		I_Ref_M[i][j] = 0;
+	// Profile 3
+	I_Ref_M = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		I_Ref_M[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			I_Ref_M[i][j] = 0;
+		}
 	}
-}
 
-Q_Ref_M = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	Q_Ref_M[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		Q_Ref_M[i][j] = 0;
+	Q_Ref_M = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		Q_Ref_M[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			Q_Ref_M[i][j] = 0;
+		}
 	}
-}
 
-U_Ref_M = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	U_Ref_M[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		U_Ref_M[i][j] = 0;
+	U_Ref_M = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		U_Ref_M[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			U_Ref_M[i][j] = 0;
+		}
 	}
-}
 
-V_Ref_M = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	V_Ref_M[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		V_Ref_M[i][j] = 0;
+	V_Ref_M = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		V_Ref_M[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			V_Ref_M[i][j] = 0;
+		}
 	}
-}
 
-// Profile 4
-I_Ref_P = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	I_Ref_P[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		I_Ref_P[i][j] = 0;
+	// Profile 4
+	I_Ref_P = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		I_Ref_P[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			I_Ref_P[i][j] = 0;
+		}
 	}
-}
 
-Q_Ref_P = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	Q_Ref_P[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		Q_Ref_P[i][j] = 0;
+	Q_Ref_P = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		Q_Ref_P[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			Q_Ref_P[i][j] = 0;
+		}
 	}
-}
 
-U_Ref_P = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	U_Ref_P[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		U_Ref_P[i][j] = 0;
+	U_Ref_P = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		U_Ref_P[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			U_Ref_P[i][j] = 0;
+		}
 	}
-}
 
-V_Ref_P = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	V_Ref_P[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		V_Ref_P[i][j] = 0;
+	V_Ref_P = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		V_Ref_P[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			V_Ref_P[i][j] = 0;
+		}
 	}
-}
 
-// Profile 5
-I_Ref_R = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	I_Ref_R[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		I_Ref_R[i][j] = 0;
+	// Profile 5
+	I_Ref_R = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		I_Ref_R[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			I_Ref_R[i][j] = 0;
+		}
 	}
-}
 
-Q_Ref_R = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	Q_Ref_R[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		Q_Ref_R[i][j] = 0;
+	Q_Ref_R = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		Q_Ref_R[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			Q_Ref_R[i][j] = 0;
+		}
 	}
-}
 
-U_Ref_R = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	U_Ref_R[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		U_Ref_R[i][j] = 0;
+	U_Ref_R = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		U_Ref_R[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			U_Ref_R[i][j] = 0;
+		}
 	}
-}
 
-V_Ref_R = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	V_Ref_R[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		V_Ref_R[i][j] = 0;
+	V_Ref_R = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		V_Ref_R[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			V_Ref_R[i][j] = 0;
+		}
 	}
-}
 
-// Profile 6
-I_Ref_L = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	I_Ref_L[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		I_Ref_L[i][j] = 0;
+	// Profile 6
+	I_Ref_L = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		I_Ref_L[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			I_Ref_L[i][j] = 0;
+		}
 	}
-}
 
-Q_Ref_L = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	Q_Ref_L[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		Q_Ref_L[i][j] = 0;
+	Q_Ref_L = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		Q_Ref_L[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			Q_Ref_L[i][j] = 0;
+		}
 	}
-}
 
-U_Ref_L = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	U_Ref_L[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		U_Ref_L[i][j] = 0;
+	U_Ref_L = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		U_Ref_L[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			U_Ref_L[i][j] = 0;
+		}
 	}
-}
 
-V_Ref_L = new double*[grid_res];
-for (int i = 0; i < grid_res; i ++ ) {
-	V_Ref_L[i] = new double[grid_res];
-	for (int j = 0; j < grid_res; j++){
-		V_Ref_L[i][j] = 0;
+	V_Ref_L = new double*[grid_res];
+	for (int i = 0; i < grid_res; i ++ ) {
+		V_Ref_L[i] = new double[grid_res];
+		for (int j = 0; j < grid_res; j++){
+			V_Ref_L[i][j] = 0;
+		}
 	}
-}
 
-for (int i = 0; i < nangles; i ++) {
-    //printf("S1[%d]: %5.5f   S2[%d]: %5.5f\n",i,S1[i].r,i,S2[i].r);
-    s11[i] = 0.5*(complx_abs(S2[i])*complx_abs(S2[i]) + complx_abs(S1[i])*complx_abs(S1[i]));
-    s12[i] = 0.5*(complx_abs(S2[i])*complx_abs(S2[i]) - complx_abs(S1[i])*complx_abs(S1[i]));
-    fortran_complex intermediate = complx_mult(complx_conj(S1[i]), S2[i]);
-    s33[i] = intermediate.r;
-    s43[i] = intermediate.i;
-}
+	// Find scattering matrix coeffients
+	for (int i = 0; i < nangles; i ++) {
+		s11[i] = 0.5*(complx_abs(S2[i])*complx_abs(S2[i]) + complx_abs(S1[i])*complx_abs(S1[i]));
+		s12[i] = 0.5*(complx_abs(S2[i])*complx_abs(S2[i]) - complx_abs(S1[i])*complx_abs(S1[i]));
+		fortran_complex intermediate = complx_mult(complx_conj(S1[i]), S2[i]);
+		s33[i] = intermediate.r;
+		s43[i] = intermediate.i;
+	}
 
-// Cleanup!
+	// Be a good citizen and clean up!
     delete [] TFORW;
     delete [] TBACK;
 	delete [] XMU;
 	delete [] PRNT;	
 	delete [] S1;
 	delete [] S2;
+
 	return 0;
 }

@@ -12,7 +12,7 @@
 // Declare variables we're grabbing from config.h
 double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
 double mu_a, mu_s, slabdepth, albedo, g;
-int nangles, nphotons;
+int nangles, nphotons, grid_res;
 double *s11, *s12, *s33, *s43;
 double **I_Ref_H, **I_Ref_V, **I_Ref_P, **I_Ref_M, **I_Ref_R, **I_Ref_L;
 double **Q_Ref_H, **Q_Ref_V, **Q_Ref_P, **Q_Ref_M, **Q_Ref_R, **Q_Ref_L;
@@ -23,9 +23,7 @@ double **V_Ref_H, **V_Ref_V, **V_Ref_P, **V_Ref_M, **V_Ref_R, **V_Ref_L;
 #include "photons.h"
 #include "printout.h"
 
-
 int main() {
-
 	config();
 	double start = clock();
 
@@ -35,7 +33,6 @@ int main() {
 	//printf("Mie properties: \ndiameter=%5.5f\nmu_s=%5.5f\nrho=%5.5f\nslabdepth=%5.5f\nasymmetry factor=%5.5f\n", radius*2, mu_s, rho, slabdepth, g);
 	printf("Mie properties: \nmu_s=%5.5f\nslabdepth=%5.5f\ng=%5.5f\n", mu_s, slabdepth,g);
 
-	int grid_res = 100;
 	const double hw = 7/(mu_s);
 
 	printf("Beginning simulation... \n");
@@ -93,7 +90,7 @@ int main() {
 			}
 			// TODO: What's the justification for this out-of-bounds behavior?
 			else {
-				double dist = fabs(a.x + hw) * grid_res / (2*hw);
+				double dist = fabs(a.x + hw) * (grid_res-1) / (2*hw);
 				idx_x = (int) dist;
 			}
 			// Outside x boundary to the left
@@ -105,7 +102,7 @@ int main() {
 				idx_y = grid_res - 1;
 			}
 			else {
-				double dist = fabs(a.y + hw) * grid_res / (2*hw);
+				double dist = fabs(a.y + hw) * (grid_res-1) / (2*hw);
 				idx_y = (int) dist;
 			}
 			//a.S.normalize();

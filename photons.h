@@ -29,8 +29,11 @@
 
 
 
-/* Properties of the light */
-
+/* Properties of the light defined in main.cpp */
+extern double *s11, *s12, *s33, *s43;
+extern double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
+extern double mu_a, mu_s, slabdepth, albedo, g;
+extern int nphotons, nangles;
 
 /* Properties of our model (taken from Ramella et. al., 2005) */
 #define WEIGHT_CUTOFF 0.01 // From Ramella et. al.
@@ -92,9 +95,6 @@ struct quaternion {
 public:
 	double q0;
 	Vector gam;
-	//double q1; 
-	//double q2;
-	//double q3;
 	quaternion(void) {
 		q0 = 0;
 	}
@@ -242,11 +242,7 @@ public:
     void move(void) {
 		double rnum = 0;
 		do { rnum = rand_num(); } while (rnum == 0);
-		
-		double epsilon = rand_num();
-        double deltaS = -log(epsilon) / (mu_a+mu_s);
-		//printf("µtotal = %5.5f, RandomNum = %5.5f, Step size: %5.5f\n", (mu_s+mu_a), epsilon, deltaS);
-
+        double deltaS = -log(rnum) / (mu_a+mu_s);
         x += U.i * deltaS;
         y += U.j * deltaS;
         z += U.k * deltaS;
@@ -272,63 +268,39 @@ public:
                 weight *= survival_multiplier; 
             } 
         }
+		
         // Check boundaries
-		if (this->z < 0) { // Photon is reflected
+		if (this->z <= 0) { // Photon is reflected
 			// Rotate axes back to reference frame
-			double epsilon = 0;
 			Vector W = Vector::cross_prod(V,U);
-			if ((V.k <= 1e-12) && (W.k <= 1e-12)) {  }
-			else { epsilon = atan2(V.k , -W.k); 
-
-			// Rotate reference frame
-			//quaternion rot_U_e(epsilon, U);
-			//Vector newV = rot_U_e.vector_prod(V);
-			//V = newV;
+			if ((V.k <= 1e-8) && (W.k <= 1e-8)) {  }
+			else { 
+			double epsilon = atan2(V.k , -W.k); 
 			S.rotate_stokes(epsilon);
 			double phi = atan2(U.j, U.i);
 			S.rotate_stokes(phi);
 			}
-			//Vector unit_z(0,0,1);
-			//quaternion rot_Z_p(phi, unit_z);
-			//Vector new_V = rot_Z_p.vector_prod(V);
-			//Vector new_U = rot_Z_p.vector_prod(U);
-			//V = new_V;
-			//U = new_U;
 			I_R += S.I;
 			Q_R += S.Q;
 			U_R += S.U;
 			V_R += S.V;
-            //printf("Dead by reflection\n");
 			state = DEAD;
 		}
 		else if (this->z >= slabdepth) { // Photon is transmitted
 			// Rotate axes back to reference frame
-			double epsilon = 0;
 			Vector W = Vector::cross_prod(V,U);
-			if ((V.k <= 1e-12) && (W.k <= 1e-12)) { }
-			else { epsilon = atan2(V.k , -W.k); 
-
-			// Rotate reference frame
-			//quaternion rot_U_e(epsilon, U);
-			//Vector newV = rot_U_e.vector_prod(V);
-			//V = newV;
+			if ((V.k <= 1e-8) && (W.k <= 1e-8)) { }
+			else {
+			double epsilon = atan2(V.k , -W.k); 
 			S.rotate_stokes(epsilon);
 			double phi = -1*atan2(U.j, U.i);
 			S.rotate_stokes(phi);
 			}
-			//Vector unit_z(0,0,1);
-			//quaternion rot_Z_p(phi, unit_z);
-			//Vector new_V = rot_Z_p.vector_prod(V);
-			//Vector new_U = rot_Z_p.vector_prod(U);
-			//V = new_V;
-			//U = new_U;
-
 			I_T += S.I;
 			Q_T += S.Q;
 			U_T += S.U;
 			V_T += S.V;
 			state = DEAD;
-            //printf("Dead by transmission, z = %5.5f\n", z);
 
 		}
     }
@@ -384,91 +356,6 @@ public:
 		S.V= -s43[ithedeg]*su+s33[ithedeg]*sv;
 		S.normalize();
 	}
-
-    /*
-     * scatter(void) - 
-     * Performs scattering based on the polarizing angle and scattering
-     * particles in the media. For spheres, use Mie scattering theory.
-     */
-    void scatter(void) {
-
-        /* Step 1: Rotate Stokes vector by beta */
-        // Placeholders for step 4
-        double si = S.I;
-        double sq = S.Q;
-        double su = S.U;
-        double sv = S.V;
-        S.rotate_stokes(beta);
-
-        /* Step 2: Multiply Stokes by scattering matrix */
-
-        int ithedeg = floor(alpha*nangles/M_PI);
-
-		S.I= s11[ithedeg]*si+s12[ithedeg]*sq;
-			
-		S.Q= s12[ithedeg]*si+s11[ithedeg]*sq;
-
-		S.U= s33[ithedeg]*su+s43[ithedeg]*sv;
-			
-		S.V= -s43[ithedeg]*su+s33[ithedeg]*sv;
-	    	
-
-        /* Step 3: Update directional cosine for alpha and beta */
-
-        double cos_alpha = cos(alpha);
-        double sin_alpha = sin(alpha);
-        double cos_beta = cos(beta);
-        double sin_beta = sin(beta); 
-        double old_ui = U.i;
-        double old_uj = U.j;
-        double old_uk = U.k;
-
-        // Shortcut for when we are just about perpendicular to z axis
-        if (1 - U.k <= 1e-6) {
-            U.i = sin_alpha*cos_beta;
-            U.j = sin_alpha*sin_beta*cos_beta*2;
-            if (U.k > 0) {
-                U.k = cos_alpha;
-            } else {
-                U.k = -cos_alpha;
-            }
-        }
-        else {
-            // Placeholders for the calculation
-            double sin_z = sqrt(1-(U.k)*(U.k));
-
-            U.i = sin_alpha*(old_ui*old_uj*cos_beta - old_uj*sin_beta) / sin_z + old_ui*cos_alpha;
-            //U.j = sin_alpha*(old_uj*old_uk*cos_beta + old_ui*sin_beta) / (sin_z + old_uj*cos_alpha);
-            //U.k = -sin_alpha*cos_beta*sin_z + old_uk*cos_alpha;
-            U.j = sin_alpha*(old_ui*old_uk*cos_beta - old_ui*sin_beta) / sin_z + old_uj*cos_alpha;
-            U.k = sin_alpha*cos_beta*sin_z*(old_uj*old_uk*cos_beta - old_ui*sin_beta) + old_uk*cos_alpha;
-        }
-
-
-        /* Step 4: Rotate Stokes again to get back into reference frame */
-        double denominator = sqrt(1-cos_alpha*cos_alpha)*sqrt(1-U.k*U.k);
-        double cosi;
-        if (denominator <= 1e-12) { S.rotate_stokes(3*M_PI/2); }
-        else {
-            if ((beta > M_PI) && (beta < 2*M_PI)) {
-                cosi = (U.k*cos_alpha - old_uk) / denominator;
-            } else {
-                cosi = -(U.k*cos_alpha - old_uk) / denominator;
-            }
-            if (cosi > 1) { S.rotate_stokes(2*M_PI); }
-            else if (cosi < -1) { S.rotate_stokes(M_PI);}
-            else {
-				//S.rotate_stokes(2*M_PI - acos(cosi)); 
-				double cos2b = 2*cosi*cosi -1;
-				double sin2b = sqrt(1-cos2b*cos2b);
-				sq = S.Q;
-				su = S.U;
-				S.Q = (cos2b*sq - su*sin2b);
-				S.U = (sin2b*sq + su*cos2b);
-			}
-        }
-        S.normalize();
-    }
 };
 
 #endif
