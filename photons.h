@@ -66,6 +66,10 @@ public:
 
     void scalar_mult(double x) { I = x*I; Q = x*Q; U = x*U; V = x*V;}    
 
+	/*
+	 * Rotation of Stokes vector by angle phi
+	 * about the axis of propogation
+	 */
 	void rotate_stokes(double phi) {                                     
 		double cos_2phi = cos(2*phi);                                    
 		double sin_2phi = sin(2*phi);                                	
@@ -140,8 +144,8 @@ private:
 public:
 	double alpha; // scattering angles
 	double beta; // scattering angles
-    Vector V; // Orientation vector
-    Vector U; // Direction cosine vector
+    Vector V; // Orientation vector (Stokes Y axis)
+    Vector U; // Direction of Propogation (Stokes Z axis) 
     double x; // Lateral x position (cm)
     double y; // Lateral y position (cm)
     double z;
@@ -273,7 +277,7 @@ public:
 			// Rotate axes back to reference frame
 			double epsilon = 0;
 			Vector W = Vector::cross_prod(V,U);
-			if ((V.k <= 1e-12) && (U.k <= 1e-12)) {  }
+			if ((V.k <= 1e-12) && (W.k <= 1e-12)) {  }
 			else { epsilon = atan2(V.k , -W.k); 
 
 			// Rotate reference frame
@@ -301,7 +305,7 @@ public:
 			// Rotate axes back to reference frame
 			double epsilon = 0;
 			Vector W = Vector::cross_prod(V,U);
-			if ((V.k <= 1e-12) && (U.k <= 1e-12)) { }
+			if ((V.k <= 1e-12) && (W.k <= 1e-12)) { }
 			else { epsilon = atan2(V.k , -W.k); 
 
 			// Rotate reference frame
