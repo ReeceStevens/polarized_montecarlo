@@ -12,23 +12,6 @@
 #define ALIVE 1
 #define DEAD 0
 
-// TODO: 
-// make the effects of diattenuation optional (turn on or off)
-// decide whether or not to do the sphere or cylinder at every scattering encounter
-//
-// Get spherical model working using ramella code or other lit
-// test decision making by choosing two different diameters of spherical scatterers
-//
-// Make modular? more general structure, additional components for later montecarlo
-//
-// swappable sizes, polarization or not, birefringence or not, etc.
-//
-// new phase functions or not
-//
-// Validation using newest Ramella paper. compare to ramella output for validation.
-
-
-
 /* Properties of the light defined in main.cpp */
 extern double *s11, *s12, *s33, *s43;
 extern double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
@@ -36,7 +19,7 @@ extern double mu_a, mu_s, slabdepth, albedo, g;
 extern int nphotons, nangles;
 
 /* Properties of our model (taken from Ramella et. al., 2005) */
-#define WEIGHT_CUTOFF 0.01 // From Ramella et. al.
+#define WEIGHT_CUTOFF 0.01 
 const double survival_multiplier = 10;
 const double survival_chance = 1 / survival_multiplier;
 
@@ -137,6 +120,7 @@ public:
 
 };
 
+
 struct photon {
 private:
     double weight;
@@ -187,65 +171,19 @@ public:
         return state; 
     }
 
-
-	void rotate_about_vector(Vector& trajectory, Vector& axis, double angle) {
-		int columns = 3;
-		int rows = 3;	
-		double** r_euler = new double* [columns];
-		for (int i = 0; i < columns; i += 1) {
-			r_euler[i] = new double [rows];
-		}
-
-		// Define a rotational matrix R_{euler}
-		r_euler[0][0] = axis.i*axis.i*(1- cos(angle));
-		r_euler[1][0] = axis.j*axis.i*(1- cos(angle)) - axis.k*sin(angle);	
-		r_euler[2][0] = axis.k*axis.i*(1- cos(angle)) + axis.j*sin(angle);
-		r_euler[0][1] = axis.i*axis.j*(1- cos(angle)) + axis.k*sin(angle);	
-		r_euler[1][1] = axis.j*axis.j*(1- cos(angle)) + cos(angle);	
-		r_euler[2][1] = axis.j*axis.k*(1- cos(angle)) - axis.i*sin(angle);	
-		r_euler[0][2] = axis.i*axis.k*(1- cos(angle)) - axis.j*sin(angle);	
-		r_euler[1][2] = axis.j*axis.k*(1- cos(angle)) + axis.i*sin(angle);	
-		r_euler[2][2] = axis.k*axis.k*(1- cos(angle)) + cos(angle);	
-
-		// Make vectors into arrays for easier multiplication
-		double* v = new double [3];	
-		v[0] = trajectory.i;	
-		v[1] = trajectory.j;	
-		v[2] = trajectory.k;	
-
-		double* new_v = new double [3];	
-		new_v[0] = 0;	
-		new_v[1] = 0;	
-		new_v[2] = 0;
-
-		// Multiply trajectory by rotational matrix.
-		for (int i = 0; i < 3; i += 1) {
-			for (int j = 0; j < 3; j += 1) {
-				new_v[i] += v[j] * r_euler[j][i];
-			}			
-		}
-
-		// Update trajectory vector
-		trajectory.i = new_v[0];
-		trajectory.j = new_v[1];
-		trajectory.k = new_v[2];	
-
-		delete [] r_euler;
-		delete [] v;
-	}
-	
 	/* 
      * move(void) -
      * Adjust position of photon in space based upon
      * orientation and properties of the medium.
      */
-    void move(void) {
+    double move(void) {
 		double rnum = 0;
 		do { rnum = rand_num(); } while (rnum == 0);
         double deltaS = -log(rnum) / (mu_a+mu_s);
         x += U.i * deltaS;
         y += U.j * deltaS;
         z += U.k * deltaS;
+		return deltaS;
     }
 
     /* 
@@ -263,7 +201,6 @@ public:
             if (rand <= survival_chance) {
                 weight = 0;  
                 state = DEAD;
-                //printf("Dead by absorption\n");
             } else {    
                 weight *= survival_multiplier; 
             } 
@@ -273,7 +210,7 @@ public:
 		if (this->z <= 0) { // Photon is reflected
 			// Rotate axes back to reference frame
 			Vector W = Vector::cross_prod(V,U);
-			if ((V.k <= 1e-8) && (W.k <= 1e-8)) {  }
+			if ((fabs(V.k) <= 1e-8) && (fabs(W.k) <= 1e-8)) {  }
 			else { 
 			double epsilon = atan2(V.k , -W.k); 
 			S.rotate_stokes(epsilon);
@@ -289,11 +226,11 @@ public:
 		else if (this->z >= slabdepth) { // Photon is transmitted
 			// Rotate axes back to reference frame
 			Vector W = Vector::cross_prod(V,U);
-			if ((V.k <= 1e-8) && (W.k <= 1e-8)) { }
+			if ((fabs(V.k) <= 1e-8) && (fabs(W.k) <= 1e-8)) { }
 			else {
 			double epsilon = atan2(V.k , -W.k); 
 			S.rotate_stokes(epsilon);
-			double phi = -1*atan2(U.j, U.i);
+			double phi = atan2(U.j,-U.i);
 			S.rotate_stokes(phi);
 			}
 			I_T += S.I;
@@ -301,7 +238,6 @@ public:
 			U_T += S.U;
 			V_T += S.V;
 			state = DEAD;
-
 		}
     }
 
@@ -311,19 +247,14 @@ public:
 	void rejection(void) {
         // Placeholder locals for choosing rejection angle alpha
         double theta, phi, Io, Iith, rand_no;
-		int i = 0;
         do {
-			i++;
-            //printf("S.I: %5.5f  S.Q: %5.5f  S.U: %5.5f  S.V: %5.5f\n",S.I,S.Q,S.U,S.V);
-            theta = acos(2*rand_num() - 1); // TODO: why do we need to do 2*rand - 1? isn't this redundant?
+            theta = acos(2*rand_num() - 1); 
             phi = 2*M_PI*rand_num();
             Io = s11[0]*S.I + s12[0]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
             int i = floor(theta / M_PI * nangles);
             Iith = s11[i]*S.I + s12[i]*(S.Q*cos(2*phi) + S.U*sin(2*phi));
             rand_no = rand_num();
-            //printf("Rand_no: %5.5f\nIo: %5.5f\nIith: %5.5f\n",rand_no,Io, Iith);
         } while ((rand_no*Io) >= Iith);
-		//printf("Rejection Iterations: %d\n",i);
 		alpha = theta;
 		beta = phi;
 		return;

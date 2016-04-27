@@ -1,3 +1,9 @@
+/*
+ * Vector.h
+ * Physical <i,j,k> vector class for Monte Carlo simulation
+ * along with some useful utility member functions
+ */
+
 #include <stdio.h>
 #include <math.h>
 

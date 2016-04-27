@@ -1,8 +1,8 @@
 /*
  * config.h
- * Parse user configuration files to produce variables for Monte Carlo
- *
- *
+ * Parse user configuration files to produce variables for Monte Carlo.
+ * Currently, just holds the setup for testing. Future work: expand this
+ * file to parse JSON for config parameters.
  */
 #include <stdio.h>
 #include <stdlib.h>
