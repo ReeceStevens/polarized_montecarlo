@@ -4,16 +4,22 @@
  * for further investigation in matlab
  */
 #include <stdio.h>
+#include <string.h>
 extern int grid_res;
 extern double **I_Ref_H, **I_Ref_V, **I_Ref_P, **I_Ref_M, **I_Ref_R, **I_Ref_L;
 extern double **Q_Ref_H, **Q_Ref_V, **Q_Ref_P, **Q_Ref_M, **Q_Ref_R, **Q_Ref_L;
 extern double **U_Ref_H, **U_Ref_V, **U_Ref_P, **U_Ref_M, **U_Ref_R, **U_Ref_L;
 extern double **V_Ref_H, **V_Ref_V, **V_Ref_P, **V_Ref_M, **V_Ref_R, **V_Ref_L;
 
-void printout() {
+void printout(const char* prefix) {
+	char op_file_name[] = "output.m";
+	int total_size = strlen(op_file_name) + strlen(prefix) + 1;
+	char* filename = new char[total_size];
+	strlcpy(filename, prefix, total_size);
+	strlcat(filename, op_file_name, total_size);
 	/* Printing Output Matrices */
 	FILE* op_matrix;
-	op_matrix = fopen("output.m", "w");
+	op_matrix = fopen(filename, "w");
 	// Output Profile 1
 	fprintf(op_matrix, "I_R_1 = [");
 	for (int i = 0; i < grid_res; i ++) {
@@ -245,4 +251,5 @@ void printout() {
 	fprintf(op_matrix,"];\n");
 
 	fclose(op_matrix);
+	delete [] filename;
 }

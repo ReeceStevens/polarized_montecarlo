@@ -23,7 +23,7 @@ double **V_Ref_H, **V_Ref_V, **V_Ref_P, **V_Ref_M, **V_Ref_R, **V_Ref_L;
 #include "photons.h"
 #include "printout.h"
 
-int main() {
+int main(int argc, char* argv[]) {
 	config();
 	const double hw = 7/(mu_s);
 	double start = clock();
@@ -163,7 +163,14 @@ int main() {
 	}
 
     printf("Simulation done!\n");
-	printout();
+	// If no output file name given, just use default.
+	if (argc < 2) {
+		printout("");
+	}
+	// Otherwise, use given prefix
+	else {
+		printout(argv[1]);	
+	}
 	double finish = clock();
 	printf("Total time: %5f seconds\a\n", (finish-start)/CLOCKS_PER_SEC);
 	printf("\n\n");
