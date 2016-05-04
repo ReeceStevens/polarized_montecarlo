@@ -7,6 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <fstream>
+
+#include "json.hpp"
+
+using json = nlohmann::basic_json<>;
 
 // These variables are coming from main 
 extern double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
@@ -44,9 +49,37 @@ extern "C" void MIEV0(float* XX, fortran_complex* CREFIN, int* PERFCT, float* MI
                    fortran_complex* S1, fortran_complex* S2, 
                    fortran_complex* TFORW, fortran_complex* TBACK, float* SPIKE );
 
+
 int config(void) {
 
-	nphotons = 1e6;
+	// Import JSON configuration file
+	std::ifstream config_file("example_input.json");
+	json params;
+	config_file >> params;
+
+	nphotons = params["light"]["nphotons"];
+	double wavelength = params["light"]["wavelength"];
+	double radius = params["scatterer"]["diameter"];
+	radius /= 2;
+	double rho = params["scatterer"]["density"];
+	nangles = params["nangles"];
+	mu_a = params["medium"]["mu_a"];
+	double scat_crefin_real = params["scatterer"]["complex_refractive_index"]["real"];
+	double scat_crefin_imag = params["scatterer"]["complex_refractive_index"]["imag"];
+	double med_crefin_real = params["medium"]["complex_refractive_index"]["real"];
+	double med_crefin_imag = params["medium"]["complex_refractive_index"]["imag"];
+
+	fortran_complex CREFIN;
+	CREFIN.r = scat_crefin_real / med_crefin_real;
+	// TODO: undefined behavior here. 
+	// How should CREFIN behave if imag component is zero for medium?
+	if (med_crefin_imag == 0) {
+		CREFIN.i = 0.0;
+	} else {
+		CREFIN.i = scat_crefin_imag / med_crefin_imag;
+	}
+
+
 	/* Create Global Variables */
 	// Stokes vector collector for reflected photons
 	I_R = 0;
@@ -60,13 +93,12 @@ int config(void) {
 	U_T = 0;
 	V_T = 0;
 
-	//double radius = (2.0/2); // Radius of spherical scatterer 
-	double radius = (2.02/2); // Radius of spherical scatterer 
+	//nangles = 1000;
+	//double rho = 1.152e-4; // Density of spherical scatterers in medium
+	//double radius = (2.02/2); // Radius of spherical scatterer 
 	//double wavelength = 0.6328; // wavelength of incident beam 
-	double wavelength = 0.543; // wavelength of incident beam 
-	double rho = 1.152e-4; // Density of spherical scatterers in medium
-	nangles = 1000;
-	mu_a = 0.0;
+	//double wavelength = 0.543; // wavelength of incident beam 
+	//mu_a = 0.0;
 
 	s11 = new double[nangles];
 	s12 = new double[nangles];
@@ -77,9 +109,6 @@ int config(void) {
 	// Mie scattering variables. Passed into Wiscombe's mie scattering subroutine.
 	// Initial values taken from Ramella et. al. model.
 	// INPUT
-	fortran_complex CREFIN;
-	CREFIN.r = (1.59/1.33);
-	CREFIN.i = 0.0;
 	int PERFCT = 0; // false, refractive index is not infinite.
 	float MIMCUT = 1e-6; 
 	float XX= (float) (2 * M_PI * radius / (wavelength/1.33)); // Size parameter

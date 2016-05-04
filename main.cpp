@@ -24,7 +24,11 @@ double **V_Ref_H, **V_Ref_V, **V_Ref_P, **V_Ref_M, **V_Ref_R, **V_Ref_L;
 #include "printout.h"
 
 int main() {
-	config();
+	int error = config();
+	// If there was an error on startup, don't run the simulation.
+	if (error) {
+		return 1;
+	}
 	const double hw = 7/(mu_s);
 	double start = clock();
 	srand(time(NULL));

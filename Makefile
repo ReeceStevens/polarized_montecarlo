@@ -7,7 +7,7 @@ F_COMPILER=gfortran
 
 all:
 	${F_COMPILER} -c *.f
-	${C_COMPILER} -c main.cpp
+	${C_COMPILER} -std=c++11 -c main.cpp
 	#gfortran -o main *.o -lstdc++ -lm
 	${C_COMPILER} -O ${OBJECTS} -lm -lgfortran -o main
 

@@ -1,0 +1,23 @@
+{
+	"scatterer": {
+		"type": "sphere",
+		"diameter": 2.02, 
+		"complex_refractive_index": {
+			"real": 1.59,
+			"imag": 0.0
+		},
+		"density": 1.152e-4
+	},
+	"light": {
+		"wavelength": 0.543,
+		"nphotons": 1e6
+	},
+	"nangles": 1000,
+	"medium": {
+		"mu_a": 0.0,
+		"complex_refractive_index": {
+			"real": 1.33,
+			"imag": 0.0
+		}
+	}
+}
