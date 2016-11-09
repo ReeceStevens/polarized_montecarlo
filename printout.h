@@ -15,8 +15,8 @@ void printout(const char* prefix) {
 	char op_file_name[] = "output.m";
 	int total_size = strlen(op_file_name) + strlen(prefix) + 1;
 	char* filename = new char[total_size];
-	strlcpy(filename, prefix, total_size);
-	strlcat(filename, op_file_name, total_size);
+	strncpy(filename, prefix, total_size);
+	strncat(filename, op_file_name, total_size);
 	/* Printing Output Matrices */
 	FILE* op_matrix;
 	op_matrix = fopen(filename, "w");
