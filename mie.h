@@ -41,9 +41,10 @@ double mie_mu_s(double ang) {
 
 
 scat_props_t* mie_setup() {
-    double radius = (2.02/2); // Radius of spherical scatterer 
-    //double wavelength = 0.6328; // wavelength of incident beam 
-    double wavelength = 0.543; // wavelength of incident beam 
+    /* double radius = (2.02/2); // Radius of spherical scatterer */ 
+    double radius = (2.0/2); // Radius of spherical scatterer 
+    double wavelength = 0.6328; // wavelength of incident beam 
+    /* double wavelength = 0.543; // wavelength of incident beam */ 
     double rho = 1.152e-4; // Density of spherical scatterers in medium
     int nangles = 1000;
     double mu_a = 0.0;
@@ -138,6 +139,9 @@ scat_props_t* mie_setup() {
     props->s33 = s33;
     props->s43 = s43;
 
+    props->albedo = albedo;
+    props->slabdepth = slabdepth;
+    props->g = g;
     props->mu_s = &mie_mu_s;
 
     return props;

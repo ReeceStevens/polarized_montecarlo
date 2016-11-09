@@ -6,6 +6,9 @@ struct {
     double *s12;
     double *s33;
     double *s43;
+    double albedo;
+    double slabdepth;
+    double g;
     double (*mu_s) (double); // Function defining mu_s at a given polarization state
 } typedef scat_props_t;
 

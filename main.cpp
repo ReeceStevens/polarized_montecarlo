@@ -5,10 +5,16 @@
  */
 
 #include <stdio.h>
+
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
 #include "scat.h"
+
+#include "config.h"
+#include "mie.h"
+#include "photons.h"
+#include "printout.h"
 
 // Declare variables we're grabbing from config.h
 scat_props_t* mie_props;
@@ -21,10 +27,6 @@ double **Q_Ref_H, **Q_Ref_V, **Q_Ref_P, **Q_Ref_M, **Q_Ref_R, **Q_Ref_L;
 double **U_Ref_H, **U_Ref_V, **U_Ref_P, **U_Ref_M, **U_Ref_R, **U_Ref_L;
 double **V_Ref_H, **V_Ref_V, **V_Ref_P, **V_Ref_M, **V_Ref_R, **V_Ref_L;
 
-#include "config.h"
-#include "mie.h"
-#include "photons.h"
-#include "printout.h"
 
 void updateProgressBar(int photonNumber) {
     if ((photonNumber%100000) == 0) { 
@@ -140,27 +142,25 @@ void logPhoton(photon a, const int simulationSet, const double hw) {
 }
 
 int main(int argc, char* argv[]) {
-    printf("Beginning\n");
     config();
-    printf("Configured\n");
     double start = clock();
-    printf("Clock started\n");
     srand(time(NULL));
-    printf("RNG Primed\n");
     const double avg_ang = 0;
-    printf("mu_s function setting\n");
-    /* double (*mu_s)(double ang) = mie_props->mu_s; */
-    printf("mu_s function set\n");
     const double hw = 7/(mie_props->mu_s(avg_ang));
-    printf("hw calculated\n");
+
+    albedo = mie_props->albedo;
+    g = mie_props->g;
+    slabdepth = mie_props->slabdepth;
 
     printf("\n\n\n***Starting Simulation***\n");
-    printf("Mie properties: \nmu_s=%5.5f\nslabdepth=%5.5f\ng=%5.5f\n", mie_props->mu_s(avg_ang), slabdepth,g);
+    printf("Mie properties: \nmu_s=%5.5f\nslabdepth=%5.5f\ng=%5.5f\n",
+            mie_props->mu_s(avg_ang), slabdepth,g);
     printf("Beginning simulation... \n\n");
     for (int j = 0; j < 6; j ++) {
         int num_ref = 0;
         double stotal = 0;
         for (int i = 0; i < nphotons; i ++ ) {
+            /* printf("Photon number %d\n", i); */
             updateProgressBar(i);
             // Single Photon Simulation
             photon a = photon();

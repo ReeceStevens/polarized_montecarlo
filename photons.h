@@ -14,6 +14,7 @@
 #define DEAD 0
 
 /* Properties of the light defined in main.cpp */
+extern scat_props_t* mie_props;
 extern double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
 extern double mu_a, slabdepth, albedo, g;
 extern int nphotons, nangles;
@@ -193,7 +194,7 @@ public:
      * is dead, re-orient it to detector and record stokes vector.
      */
     void drop(void) {
-        weight *= albedo; 
+        weight *= albedo;
         // Check weight
         if (weight < WEIGHT_CUTOFF) {  
             // Russian Roulette for photon absorption
