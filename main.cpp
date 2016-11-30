@@ -9,17 +9,8 @@
 #include <time.h>
 #include <math.h>
 
-// Declare variables we're grabbing from config.h
-double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
-double mu_a, mu_s, slabdepth, albedo, g;
-int nangles, nphotons, grid_res;
-double *s11, *s12, *s33, *s43;
-double **I_Ref_H, **I_Ref_V, **I_Ref_P, **I_Ref_M, **I_Ref_R, **I_Ref_L;
-double **Q_Ref_H, **Q_Ref_V, **Q_Ref_P, **Q_Ref_M, **Q_Ref_R, **Q_Ref_L;
-double **U_Ref_H, **U_Ref_V, **U_Ref_P, **U_Ref_M, **U_Ref_R, **U_Ref_L;
-double **V_Ref_H, **V_Ref_V, **V_Ref_P, **V_Ref_M, **V_Ref_R, **V_Ref_L;
-
 #include "config.h"
+#include "mie.h"
 #include "photons.h"
 #include "printout.h"
 
