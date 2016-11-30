@@ -5,7 +5,6 @@
 #include <time.h>
 
 #include "Vector.h"
-#include "mie.h"
 
 #ifndef __photons__h
 #define __photons__h 1
@@ -13,6 +12,11 @@
 #define ALIVE 1
 #define DEAD 0
 
+/* Properties of the light defined in main.cpp */
+extern double *s11, *s12, *s33, *s43;
+extern double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
+extern double mu_a, mu_s, slabdepth, albedo, g;
+extern int nphotons, nangles;
 
 /* Properties of our model (taken from Ramella et. al., 2005) */
 #define WEIGHT_CUTOFF 0.01 

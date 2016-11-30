@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 
-OBJECTS = main.o MIEV0.o ErrPack.o
+OBJECTS = main.o MIEV0.o ErrPack.o 
 
 C_COMPILER=g++-5
 F_COMPILER=gfortran
@@ -12,7 +12,8 @@ all:
 	${C_COMPILER} -O ${OBJECTS} -lm -lgfortran -o main
 
 clean:
-	rm *.o main
+	rm *.o
+	rm main
 
 test:
 	make all
