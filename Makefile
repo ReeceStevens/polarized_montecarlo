@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 
 OBJECTS = main.o MIEV0.o ErrPack.o
 
-C_COMPILER=g++-5
+C_COMPILER=g++
 F_COMPILER=gfortran
 
 all:
