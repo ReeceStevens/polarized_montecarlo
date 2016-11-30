@@ -30,99 +30,99 @@ void updateProgressBar(int photonNumber) {
     }
 }
 
-void setStokesVector(photon a, int simulationSet) {
+void setStokesVector(photon* a, int simulationSet) {
     switch(simulationSet) {
         case 0:
-            a.setStokes(1,1,0,0);
+            a->setStokes(1,1,0,0);
             break;
         case 1:
-            a.setStokes(1,-1,0,0);
+            a->setStokes(1,-1,0,0);
             break;
         case 2:
-            a.setStokes(1,0,1,0);
+            a->setStokes(1,0,1,0);
             break;
         case 3: 
-            a.setStokes(1,0,-1,0);
+            a->setStokes(1,0,-1,0);
             break;
         case 4:
-            a.setStokes(1,0,0,1);
+            a->setStokes(1,0,0,1);
             break;
         case 5:
-            a.setStokes(1,0,0,-1);
+            a->setStokes(1,0,0,-1);
             break;
     }
 }
 
-int launchPhoton(photon a) {
+int launchPhoton(photon* a) {
     int k = 0;
-    while (a.alive()) {
-        a.move();
-        a.drop();
-        if (!a.alive()) { 
+    while (a->alive()) {
+        a->move();
+        a->drop();
+        if (!a->alive()) { 
             break;
         }
-        a.rejection();
-        a.quaternion_scatter();
+        a->rejection();
+        a->quaternion_scatter();
         k ++;
     }
     return k;
 }
 
-void logPhoton(photon a, int simulationSet) {
+void logPhoton(photon* a, int simulationSet) {
 	const double hw = 7/(mu_s);
-    if (a.z < 0) {	// If reflected, mark on surface map
+    if (a->z < 0) {	// If reflected, mark on surface map
         int idx_x = 0;
         int idx_y = 0;
         // X index
-        if (a.x > hw) {
-            idx_x = grid_res - 1;
-        } else if (a.x > -hw) {
-            double dist = fabs(a.x + hw) * (grid_res-1) / (2*hw);
+        if (a->x > hw) {
+            idx_x = GRID_RES - 1;
+        } else if (a->x > -hw) {
+            double dist = fabs(a->x + hw) * (GRID_RES-1) / (2*hw);
             idx_x = (int) dist;
         }
         // Y index
-        if (a.y > hw) {
-            idx_y = grid_res - 1;
-        } else if (a.y > -hw) {
-            double dist = fabs(a.y + hw) * (grid_res-1) / (2*hw);
+        if (a->y > hw) {
+            idx_y = GRID_RES - 1;
+        } else if (a->y > -hw) {
+            double dist = fabs(a->y + hw) * (GRID_RES-1) / (2*hw);
             idx_y = (int) dist;
         }
         switch(simulationSet) {
             case 0:
-                I_Ref_H[idx_y][idx_x] += a.S.I;
-                Q_Ref_H[idx_y][idx_x] += a.S.Q;
-                U_Ref_H[idx_y][idx_x] += a.S.U;
-                V_Ref_H[idx_y][idx_x] += a.S.V;
+                I_Ref_H[idx_y][idx_x] += a->S.I;
+                Q_Ref_H[idx_y][idx_x] += a->S.Q;
+                U_Ref_H[idx_y][idx_x] += a->S.U;
+                V_Ref_H[idx_y][idx_x] += a->S.V;
                 break;
             case 1:
-                I_Ref_V[idx_y][idx_x] += a.S.I;
-                Q_Ref_V[idx_y][idx_x] += a.S.Q;
-                U_Ref_V[idx_y][idx_x] += a.S.U;
-                V_Ref_V[idx_y][idx_x] += a.S.V;
+                I_Ref_V[idx_y][idx_x] += a->S.I;
+                Q_Ref_V[idx_y][idx_x] += a->S.Q;
+                U_Ref_V[idx_y][idx_x] += a->S.U;
+                V_Ref_V[idx_y][idx_x] += a->S.V;
                 break;
             case 2:
-                I_Ref_P[idx_y][idx_x] += a.S.I;
-                Q_Ref_P[idx_y][idx_x] += a.S.Q;
-                U_Ref_P[idx_y][idx_x] += a.S.U;
-                V_Ref_P[idx_y][idx_x] += a.S.V;
+                I_Ref_P[idx_y][idx_x] += a->S.I;
+                Q_Ref_P[idx_y][idx_x] += a->S.Q;
+                U_Ref_P[idx_y][idx_x] += a->S.U;
+                V_Ref_P[idx_y][idx_x] += a->S.V;
                 break;
             case 3:
-                I_Ref_M[idx_y][idx_x] += a.S.I;
-                Q_Ref_M[idx_y][idx_x] += a.S.Q;
-                U_Ref_M[idx_y][idx_x] += a.S.U;
-                V_Ref_M[idx_y][idx_x] += a.S.V;
+                I_Ref_M[idx_y][idx_x] += a->S.I;
+                Q_Ref_M[idx_y][idx_x] += a->S.Q;
+                U_Ref_M[idx_y][idx_x] += a->S.U;
+                V_Ref_M[idx_y][idx_x] += a->S.V;
                 break;
             case 4:
-                I_Ref_R[idx_y][idx_x] += a.S.I;
-                Q_Ref_R[idx_y][idx_x] += a.S.Q;
-                U_Ref_R[idx_y][idx_x] += a.S.U;
-                V_Ref_R[idx_y][idx_x] += a.S.V;
+                I_Ref_R[idx_y][idx_x] += a->S.I;
+                Q_Ref_R[idx_y][idx_x] += a->S.Q;
+                U_Ref_R[idx_y][idx_x] += a->S.U;
+                V_Ref_R[idx_y][idx_x] += a->S.V;
                 break;
             case 5:
-                I_Ref_L[idx_y][idx_x] += a.S.I;
-                Q_Ref_L[idx_y][idx_x] += a.S.Q;
-                U_Ref_L[idx_y][idx_x] += a.S.U;
-                V_Ref_L[idx_y][idx_x] += a.S.V;
+                I_Ref_L[idx_y][idx_x] += a->S.I;
+                Q_Ref_L[idx_y][idx_x] += a->S.Q;
+                U_Ref_L[idx_y][idx_x] += a->S.U;
+                V_Ref_L[idx_y][idx_x] += a->S.V;
                 break;
         }
     }
@@ -142,9 +142,9 @@ int main(int argc, char* argv[]) {
 			// Single Photon Simulation
 			photon a = photon();
 			// Choose incident polarization state
-            setStokesVector(a, j);
-            launchPhoton(a);
-            logPhoton(a, j);
+            setStokesVector(&a, j);
+            launchPhoton(&a);
+            logPhoton(&a, j);
 		}
         printf("\rProgress: [••••••••••••••••••••••••••••••••••••••••] 100%%\n");
         printf("\nRound %d:\n", j);
