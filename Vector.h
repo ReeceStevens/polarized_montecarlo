@@ -33,7 +33,7 @@ public:
         double new_i = a.j * b.k - a.k * b.j;
         double new_j = -(a.i * b.k - a.k * b.i);
         double new_k = a.i * b.j - a.j * b.i;
-        Vector result(new_i, new_j, new_k);   
+        Vector result(new_i, new_j, new_k);
         return result;
     };
 
@@ -47,19 +47,19 @@ public:
     };
 
     static Vector scalar_mult(double x, Vector &a) { 
-		Vector result(a.i*x, a.j*x, a.k*x);
-		return result;
-	}
+        Vector result(a.i*x, a.j*x, a.k*x);
+        return result;
+    }
 
-	// Three-element sum
-	static Vector sum(Vector& a, Vector& b, Vector & c) {
-		Vector result(a.i+b.i+c.i, a.j+b.j+c.j, a.k+b.k+c.k);
-		return result;
-	}
+    // Three-element sum
+    static Vector sum(Vector& a, Vector& b, Vector & c) {
+        Vector result(a.i+b.i+c.i, a.j+b.j+c.j, a.k+b.k+c.k);
+        return result;
+    }
 
-	void operator=(Vector& a) {
-		i = a.i;
-		j = a.j;
-		k = a.k;
-	}
+    void operator=(Vector& a) {
+        i = a.i;
+        j = a.j;
+        k = a.k;
+    }
 };
