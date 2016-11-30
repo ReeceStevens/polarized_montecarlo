@@ -9,7 +9,7 @@
 double I_R, Q_R, U_R, V_R, I_T, Q_T, U_T, V_T;
 double mu_a, mu_s, slabdepth, albedo, g;
 double *s11, *s12, *s33, *s43;
-int nangles, nphotons, grid_res;
+int nangles, nphotons;
 
 
 struct fortran_complex{ float r,i; };
@@ -128,7 +128,6 @@ void callWiscombeMie() {
 	slabdepth = 4/mu_s;
 	albedo = mu_s / (mu_s + mu_a);
 	g = GQSC / QSCA;
-	grid_res = 100;
 
 	for (int i = 0; i < nangles; i ++) {
 		s11[i] = 0.5*(complx_abs(S2[i])*complx_abs(S2[i]) + complx_abs(S1[i])*complx_abs(S1[i]));
