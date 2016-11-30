@@ -12,7 +12,7 @@ all:
 	${C_COMPILER} -O ${OBJECTS} -lm -lgfortran -o main
 
 clean:
-	rm *.o main
+	rm -f *.o main
 
 test:
 	make all
